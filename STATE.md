@@ -11,8 +11,8 @@
 | Stage | 7 Build |
 | Owner mode | builder: plain words, technical detail collapsed |
 | Size | medium · signals: backend, database, deployment (home Wi-Fi) · 9 stories · full track |
-| Milestone | M1 · First recipe end to end |
-| Next step | M1-docs: architect as-built LLD sync, then docs README; then milestone card |
+| Milestone | M2 · Backup format locked (M1 done: 393b7c7) |
+| Next step | M2: T-03 Export all recipes to one file · backend-coder (then T-04 import). Start with `/setup-project resume home-cookbook` in a fresh chat |
 | Started | 2026-11-13 07:50 +05:30 (cost.py --since) · Budget 0 (no cap) |
 | Last updated | 2026-11-13 |
 
@@ -53,7 +53,6 @@
 | T-01 | domain/amounts.py:24 | Move UnclearAmountError into domain/errors.py (CONVENTIONS §5) (n-1) | S |
 | T-01 | adapters/sqlite_repo.py:124 | Catch sqlite3.DatabaseError ("file is not a database") → one-line start-up message (n-2) | S |
 | T-01 | web/guard.py:29 | Test trailing-dot / missing Host (403); optionally strip trailing dot (n-3) | S |
-| T-01 | docs/LLD.md §6.5, §6.4 | Add D-32 Host rule and `unclear_amount` code — M1 as-built sync (n-4) | S |
 | T-01 | static/js/api.js | uiText() returns "" for an unknown key (n-5) | S |
 | T-01 | adapters (import rows) | Non-object ingredient rows are silently dropped (m-4) | S |
 | T-01 | domain | `\d` regexes match Unicode digits; use [0-9] (m-5) | S |
@@ -61,7 +60,7 @@
 | T-01 | static/js/undo.js | Guard corrupt sessionStorage JSON; ignore a double-tapped Undo (m-9 rest) | S |
 | T-01 | tests/integration/test_guard.py | Add a `::ffff:8.8.8.8` test (m-10) | S |
 | T-01 | web/guard.py, web/errors.py | Teredo/NAT64 addresses; 403 on /api is plain text, not JSON (m-11) | S |
-| T-01 | web/errors.py, app | Keep HTTPException headers; init_schema before binding the port; name the 3600 constant (m-12) | S |
+| T-01 | web/errors.py, app | Keep HTTPException headers; name the 3600 constant (m-12; init_schema-before-bind already done per M1 LLD sync) | S |
 | T-02 | static/js/edit.js:131-150 | Keep focus after move-to-end and Remove (m-4) | S |
 | T-02 | static/css/app.css:129 | Merge the second @media (min-width: 768px) block (m-5) | S |
 | T-02 | templates/edit.html, view.html | Move inline styles to app.css; give the favourite star a text alternative (m-6) | S |
@@ -78,6 +77,8 @@
 | planner, tester | docs/scenarios.md | Acceptance criteria link usage scenarios S-xx (planner gap report, stage 6) |
 
 ## Notes for the next session
+- LLD is 425 lines (400-line guide) because of the M1 change table; architect may trim at the M2 sync.
+- taskgit approve prints "approved: <hash>" then exits 1 from a `pwd` error after the worktree is removed; the merge and push succeed — verify with git log / ls-remote.
 - Repo is local-only. To move to GitHub later: `git remote set-url origin <url> && git push -u origin --all`.
 - Shared files (STATE/DECISIONS) on wip/plan: edit them only after a step's `done`, then `taskgit checkpoint` before the next agent starts — a step's scope check reverts them otherwise.
 - planner can't write docs/*.mmd; the Orchestrator copies .results/hld/hld.mmd → docs/hld-dataflow.mmd and renders it.

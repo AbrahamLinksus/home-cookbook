@@ -37,6 +37,8 @@
 | D-32 | 2026-11-13 | Guard vs DNS rebinding (review M-1) | Answer only when Host is an IP literal, localhost or *.local; else 403 | Malicious sites can't reach the app via the family's browser · open the app by IP or .local name; router names like desktop.lan get 403 | Accept the risk | T-01 |
 | D-33 | 2026-11-13 | "1,000" amounts (review m-6) | A comma followed by exactly 3 digits is refused as unclear; "0,5", "2,25" still work (refines D-22) | No silent 1,000→1 · if wrong: ~15 min to change | Treat as thousands · keep as is | T-01 |
 | D-34 | 2026-11-13 | Review minors in shared code | Fix m-1, m-2, m-3, m-7, m-9 in T-01 | One extra fix round | Fix 4 · log all | T-01 |
+| D-35 | 2026-11-13 | Settings via .env | Reword .env.example: settings are environment variables in front of the command; no .env loading | No new package · if wrong: add python-dotenv (~15 min) | Add python-dotenv | M1-docs |
+| D-36 | 2026-11-13 | Milestone M1 | Approved: as-built LLD + README; continue M2 in a fresh session | — | Continue here · request changes | M1-docs |
 
 ## Tier 2 — decided by agents (overrule any time)
 | ID | Date | Decision | Chosen | Agent | Task |
