@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block header_actions %}
+<a class="btn primary" href="/recipes/new" data-testid="add-recipe">+ Add recipe</a>
+{% endblock %}
+{% block content %}
+{% if total_live %}
+<form class="search" role="search" onsubmit="return false">
+  <input type="search" name="q" value="{{ q }}" placeholder="Search recipes…"
+         aria-label="Search recipes" data-testid="search-input">
+  <div class="toggle" role="group" aria-label="Search by">
+    <label><input type="radio" name="by" value="name" data-testid="search-by-name"
+                  {% if by == "name" %}checked{% endif %}><span>By name</span></label>
+    <label><input type="radio" name="by" value="ingredient" data-testid="search-by-ingredient"
+                  {% if by == "ingredient" %}checked{% endif %}><span>By ingredient</span></label>
+  </div>
+</form>
+{% endif %}
+<div id="recipe-list" data-testid="recipe-list">
+{% include "_list_items.html" %}
+</div>
+{% endblock %}

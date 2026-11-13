@@ -1,0 +1,120 @@
+/* Home Cookbook: mobile-first (390px base), one desktop layer at 768px. */
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 17px; line-height: 1.45; color: #222; background: #fff;
+  overflow-wrap: anywhere;
+}
+h1 { font-size: 1.5rem; margin: 0 0 .5rem; }
+h2 { font-size: 1.15rem; margin: 0; }
+a { color: #1a4f8b; }
+.muted { color: #666; font-size: .85rem; }
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap;
+}
+
+/* Buttons and fields: touch targets >= 44px */
+.btn, button, summary.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: .3rem;
+  min-height: 44px; min-width: 44px; padding: 0 12px; font: inherit; color: #222;
+  background: #e6e6e6; border: 2px solid #333; border-radius: 6px;
+  text-decoration: none; cursor: pointer; list-style: none; white-space: nowrap; font-size: 16px;
+}
+summary.btn::-webkit-details-marker { display: none; }
+.btn.primary, button.primary { background: #333; color: #fff; }
+.btn.danger { border-color: #8b1a1a; color: #8b1a1a; }
+input[type="text"], input[type="number"], input[type="search"], textarea, select {
+  width: 100%; min-height: 44px; padding: 8px 10px; font: inherit;
+  border: 2px solid #777; border-radius: 6px; background: #fff;
+}
+textarea { min-height: 88px; resize: vertical; }
+:focus-visible { outline: 3px solid #1a4f8b; outline-offset: 2px; }
+label.field-label { display: block; margin-top: 8px; font-size: .85rem; color: #555; }
+
+/* Header */
+.topbar {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 8px 12px; border-bottom: 2px solid #333; background: #fafafa;
+}
+.brand { font-weight: 700; color: #222; text-decoration: none; font-size: 1rem; line-height: 1.2; }
+.topbar-actions { display: flex; align-items: center; gap: 8px; }
+.menu { position: relative; }
+.menu-panel {
+  position: absolute; right: 0; top: 100%; z-index: 20; margin-top: 6px; min-width: 220px;
+  background: #fff; border: 2px solid #333; border-radius: 6px; padding: 4px;
+}
+.menu-item {
+  display: flex; align-items: center; min-height: 44px; padding: 0 12px;
+  color: #222; text-decoration: none; cursor: pointer; border-radius: 4px;
+}
+.menu-item:hover { background: #eee; }
+.message {
+  margin: 0; padding: 10px 12px; background: #eef4fb; border-bottom: 2px solid #1a4f8b;
+}
+
+.page { max-width: 100%; margin: 0 auto; padding: 12px; }
+
+/* Recipe list */
+.search { margin-bottom: 8px; }
+.toggle { display: flex; gap: 8px; margin-top: 8px; }
+.toggle label { flex: 1; }
+.toggle input { position: absolute; opacity: 0; }
+.toggle span {
+  display: flex; align-items: center; justify-content: center; min-height: 44px;
+  border: 2px solid #555; border-radius: 6px; cursor: pointer;
+}
+.toggle input:checked + span { background: #333; color: #fff; }
+.toggle input:focus-visible + span { outline: 3px solid #1a4f8b; outline-offset: 2px; }
+.group { background: #eee; padding: 6px 8px; font-size: .85rem; margin: 12px 0 0; }
+.rows { list-style: none; margin: 0; padding: 0; }
+.row { display: flex; align-items: center; border-bottom: 1px solid #ccc; }
+.row-link {
+  flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center;
+  min-height: 56px; padding: 8px 4px; color: #222; text-decoration: none;
+}
+.row-title { font-weight: 600; }
+.star { border: 0; background: none; font-size: 1.5rem; width: 48px; height: 48px; padding: 0; }
+.empty { text-align: center; padding: 48px 12px; }
+.empty p { color: #555; margin: 0 0 16px; }
+
+/* Undo bar */
+.undo-bar {
+  position: fixed; left: 8px; right: 8px; bottom: 8px; z-index: 30;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 10px 14px; background: #333; color: #fff; border-radius: 6px;
+}
+.undo-bar[hidden], .message[hidden] { display: none; }
+.undo-bar button { background: #fff; border-color: #fff; font-weight: 700; }
+
+/* Recipe view */
+.view-bar, .box-bar { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.box { border: 2px solid #555; border-radius: 6px; padding: 10px; margin-bottom: 10px; }
+.stepper { display: inline-flex; align-items: center; gap: 4px; }
+.stepper input { width: 64px; text-align: center; }
+.scaled-note { background: #eee; padding: 6px 8px; font-size: .85rem; margin-top: 8px; }
+.box ul, .box ol { margin: 4px 0; padding-left: 22px; }
+.box li { padding: 4px 0; }
+
+/* Recipe edit */
+.field-error { border-color: #000 !important; border-width: 3px !important; }
+.error-text { font-size: .85rem; font-weight: 700; margin-top: 2px; }
+.ing-row { display: grid; grid-template-columns: 56px 64px 1fr 44px; gap: 4px; margin: 4px 0; }
+.step-row { display: grid; grid-template-columns: 24px 1fr 44px 44px; gap: 4px; margin: 4px 0; align-items: start; }
+.add-row { width: 100%; border-style: dashed; margin-top: 4px; }
+.dialog { border: 3px solid #333; border-radius: 6px; padding: 12px; background: #eee; margin-top: 12px; }
+.dialog .btn, .dialog button { margin: 4px 4px 0 0; }
+
+@media (min-width: 768px) {
+  .topbar { padding: 8px 24px; }
+  .page { max-width: 1100px; padding: 20px 24px; }
+  #recipe-list { max-width: 720px; }
+  .search { max-width: 720px; }
+  .toggle label { flex: 0 0 auto; }
+  .toggle span { padding: 0 14px; }
+  .undo-bar { left: 50%; right: auto; transform: translateX(-50%); width: 480px; }
+  .view-cols { display: grid; grid-template-columns: 340px 1fr; gap: 16px; }
+  .edit-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+  .ing-row { grid-template-columns: 80px 96px 1fr 44px; }
+}

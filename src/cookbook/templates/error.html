@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}{{ heading }} · Home Cookbook{% endblock %}
+{% block content %}
+<section class="empty" data-testid="error-page">
+  <h1>{{ heading }}</h1>
+  {% if message != heading %}<p>{{ message }}</p>{% endif %}
+  <a class="btn" href="/">Back to recipes</a>
+</section>
+{% endblock %}

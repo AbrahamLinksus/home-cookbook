@@ -1,0 +1,36 @@
+{% macro row(recipe) %}
+<li class="row" data-testid="recipe-row">
+  <a class="row-link" href="/recipes/{{ recipe.id }}">
+    <span class="row-title">{{ recipe.title }}</span>
+    <span class="muted">{{ recipe.servings }} serving{{ "" if recipe.servings == 1 else "s" }}</span>
+  </a>
+  <button class="star" type="button" data-testid="star" data-id="{{ recipe.id }}"
+          aria-pressed="{{ 'true' if recipe.favourite else 'false' }}"
+          aria-label="{{ 'Remove from favourites' if recipe.favourite else 'Add to favourites' }}">
+    {{ "★" if recipe.favourite else "☆" }}
+  </button>
+</li>
+{% endmacro %}
+{% if total_live == 0 %}
+<section class="empty" data-testid="empty-state">
+  <h1>No recipes yet</h1>
+  <p>Add your first family recipe.</p>
+  <a class="btn primary" href="/recipes/new" data-testid="add-recipe-empty">+ Add recipe</a>
+</section>
+{% elif not recipes %}
+<section class="empty" data-testid="no-matches">
+  <h1>No recipes match '{{ q }}'</h1>
+  <a href="/" data-testid="clear-search">Clear search</a>
+</section>
+{% else %}
+{% set favourites = recipes | selectattr("favourite") | list %}
+{% set others = recipes | rejectattr("favourite") | list %}
+{% if favourites %}
+<h2 class="group">★ Favourites</h2>
+<ul class="rows">{% for recipe in favourites %}{{ row(recipe) }}{% endfor %}</ul>
+{% endif %}
+{% if others %}
+<h2 class="group">All recipes (A–Z)</h2>
+<ul class="rows">{% for recipe in others %}{{ row(recipe) }}{% endfor %}</ul>
+{% endif %}
+{% endif %}

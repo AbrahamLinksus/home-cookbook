@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Home Cookbook{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+</head>
+<body data-texts='{{ ui_texts|tojson }}'>
+<header class="topbar">
+  <a class="brand" href="/">Home Cookbook</a>
+  <div class="topbar-actions">
+    {% block header_actions %}{% endblock %}
+    <details class="menu" data-testid="menu">
+      <summary class="btn" data-testid="menu-button">&#9776; Menu</summary>
+      <div class="menu-panel">
+        <a class="menu-item" href="/export" data-testid="export-link">Export all recipes</a>
+        <label class="menu-item" for="import-input">Import recipes</label>
+        <input id="import-input" class="visually-hidden" type="file" accept=".json,application/json"
+               data-testid="import-input">
+      </div>
+    </details>
+  </div>
+</header>
+<div class="message" data-testid="menu-message" role="status" hidden></div>
+<main class="page">
+{% block content %}{% endblock %}
+</main>
+<div class="undo-bar" data-testid="undo-bar" role="status" hidden></div>
+<script type="module" src="{{ url_for('static', filename='js/api.js') }}"></script>
+<script type="module" src="{{ url_for('static', filename='js/undo.js') }}"></script>
+<script type="module" src="{{ url_for('static', filename='js/menu.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>
