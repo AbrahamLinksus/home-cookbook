@@ -55,7 +55,13 @@
 | T-01 | web/guard.py:29 | Test trailing-dot / missing Host (403); optionally strip trailing dot (n-3) | S |
 | T-01 | docs/LLD.md §6.5, §6.4 | Add D-32 Host rule and `unclear_amount` code — M1 as-built sync (n-4) | S |
 | T-01 | static/js/api.js | uiText() returns "" for an unknown key (n-5) | S |
-| T-01 | various | Earlier review minors m-4, m-5, m-8, m-10, m-11, m-12, rest of m-9 — see T-01 review notes | S–M |
+| T-01 | adapters (import rows) | Non-object ingredient rows are silently dropped (m-4) | S |
+| T-01 | domain | `\d` regexes match Unicode digits; use [0-9] (m-5) | S |
+| T-01 | app/serve.py | Banner shows the LAN IP even when bound to 127.0.0.1 (m-8) | S |
+| T-01 | static/js/undo.js | Guard corrupt sessionStorage JSON; ignore a double-tapped Undo (m-9 rest) | S |
+| T-01 | tests/integration/test_guard.py | Add a `::ffff:8.8.8.8` test (m-10) | S |
+| T-01 | web/guard.py, web/errors.py | Teredo/NAT64 addresses; 403 on /api is plain text, not JSON (m-11) | S |
+| T-01 | web/errors.py, app | Keep HTTPException headers; init_schema before binding the port; name the 3600 constant (m-12) | S |
 
 ## Context additions
 | Role | Also read | Why (from gap report) |
