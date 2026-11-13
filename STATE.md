@@ -12,7 +12,7 @@
 | Owner mode | builder: plain words, technical detail collapsed |
 | Size | medium · signals: backend, database, deployment (home Wi-Fi) · 9 stories · full track |
 | Milestone | M1 · First recipe end to end |
-| Next step | T-02 Add a recipe and read it on the phone |
+| Next step | M1-docs: architect as-built LLD sync, then docs README; then milestone card |
 | Started | 2026-11-13 07:50 +05:30 (cost.py --since) · Budget 0 (no cap) |
 | Last updated | 2026-11-13 |
 
@@ -62,10 +62,19 @@
 | T-01 | tests/integration/test_guard.py | Add a `::ffff:8.8.8.8` test (m-10) | S |
 | T-01 | web/guard.py, web/errors.py | Teredo/NAT64 addresses; 403 on /api is plain text, not JSON (m-11) | S |
 | T-01 | web/errors.py, app | Keep HTTPException headers; init_schema before binding the port; name the 3600 constant (m-12) | S |
+| T-02 | static/js/edit.js:131-150 | Keep focus after move-to-end and Remove (m-4) | S |
+| T-02 | static/css/app.css:129 | Merge the second @media (min-width: 768px) block (m-5) | S |
+| T-02 | templates/edit.html, view.html | Move inline styles to app.css; give the favourite star a text alternative (m-6) | S |
+| T-02 | tests/e2e | Tag e2e tests with (S-xx); add a 1280-wide e2e run (m-7) | S |
+| T-02 | tests (pages) | test_form_data_blank_and_filled covers only the blank form (m-8) | S |
+| T-02 | static/js/edit.js:103-107 | Several unknown 422 keys stack notes under the title (n-9) | S |
+| T-02 | tests/integration/test_serve.py | readline without timeout; add a direct regression test for the start-up race; "stopped" logged when stopped before serving (race-fix review) | S |
 
 ## Context additions
 | Role | Also read | Why (from gap report) |
 |---|---|---|
+| reviewer | src/cookbook/web/messages.py, static/js/api.js, app/factory.py | UI-text and security questions need them (T-02 gap) |
+| debugger | tests/e2e/conftest.py | UI fixes need the e2e fixtures (T-02 gap) |
 | planner, tester | docs/scenarios.md | Acceptance criteria link usage scenarios S-xx (planner gap report, stage 6) |
 
 ## Notes for the next session

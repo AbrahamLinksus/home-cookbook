@@ -42,14 +42,14 @@ Test files listed under `Files:` are written by the tester. Paths are relative t
 - Files: src/cookbook/services/keeper.py, src/cookbook/web/api.py, src/cookbook/web/pages.py, src/cookbook/templates/edit.html, src/cookbook/templates/view.html, src/cookbook/templates/_list_items.html, src/cookbook/static/js/edit.js, tests/unit/test_keeper_create.py, tests/integration/test_api_create.py, tests/e2e/test_add_recipe.py
 - Context: SPEC US-01, US-02 · LLD §1.1, §1.2, §1.4, §3.1, §3.2, §6.3, §6.4, §7.3, §7.4 · files: src/cookbook/domain/*, src/cookbook/services/keeper.py, src/cookbook/web/*.py, src/cookbook/templates/*, src/cookbook/static/js/api.js, docs/wireframes/recipe-edit.html, docs/wireframes/recipe-view.html
 - Notes: covers `create`, `get`, `POST /api/recipes`, `GET /recipes/new`, `GET /recipes/<id>` (read view with `IngredientLine` incl. `data-num/den/unit/text`, ready for scaling in T-09). Editing an existing recipe is T-06.
-- Status: Backlog
+- Status: Done
 - Acceptance criteria:
-  - [ ] Adding "Grandma's Apple Pie" (8 servings; "2 cups flour", "1 cup butter", "6 apples", "¾ cup sugar", "1 tsp cinnamon", "salt, to taste" with no amount; 5 steps starting "Preheat oven to 200°C") opens it in read view; the list shows "Grandma's Apple Pie · 8 servings"; reopening shows exactly what was typed
-  - [ ] Saving " pancakes " while "Pancakes" exists keeps the form open with "You already have a recipe called 'Pancakes'. Please choose another name, e.g. 'Pancakes (Gran's)'" under the title and saves nothing; saving as "Pancakes (Gran's)" works (S-07)
-  - [ ] Amounts typed "2", "2.5", "1/2", "1 1/2", "½" save and show as "2", "2½", "½", "1½", "½"; "2-3" keeps the form open with "Enter one amount, e.g. 2 or 2½" under that amount; a blank title or servings 0 keeps the form open with the message beside the field and focus on it (S-01)
-  - [ ] Ingredient and step rows can be added, removed and moved up/down; an ingredient added last and moved up to line 6 is saved and shown at line 6 (S-09); leaving the new form after typing asks "Discard changes?"
-  - [ ] The read view of a 38-ingredient, 22-step recipe (one step 900 words) at 390×844 has no sideways scroll (US-02, S-09); screenshots of edit and view at 390 and 1280 in `.results/T-02/`
-- Result:
+  - [x] Adding "Grandma's Apple Pie" (8 servings; "2 cups flour", "1 cup butter", "6 apples", "¾ cup sugar", "1 tsp cinnamon", "salt, to taste" with no amount; 5 steps starting "Preheat oven to 200°C") opens it in read view; the list shows "Grandma's Apple Pie · 8 servings"; reopening shows exactly what was typed
+  - [x] Saving " pancakes " while "Pancakes" exists keeps the form open with "You already have a recipe called 'Pancakes'. Please choose another name, e.g. 'Pancakes (Gran's)'" under the title and saves nothing; saving as "Pancakes (Gran's)" works (S-07)
+  - [x] Amounts typed "2", "2.5", "1/2", "1 1/2", "½" save and show as "2", "2½", "½", "1½", "½"; "2-3" keeps the form open with "Enter one amount, e.g. 2 or 2½" under that amount; a blank title or servings 0 keeps the form open with the message beside the field and focus on it (S-01)
+  - [x] Ingredient and step rows can be added, removed and moved up/down; an ingredient added last and moved up to line 6 is saved and shown at line 6 (S-09); leaving the new form after typing asks "Discard changes?"
+  - [x] The read view of a 38-ingredient, 22-step recipe (one step 900 words) at 390×844 has no sideways scroll (US-02, S-09); screenshots of edit and view at 390 and 1280 in `.results/T-02/`
+- Result: ✅ 5/5 criteria · 164 tests · coverage 88% · 2 debug rounds (3 form minors; T-01 start-up race in serve.py fixed) · commit f219af0
 
 ## M2 · Backup format locked
 
