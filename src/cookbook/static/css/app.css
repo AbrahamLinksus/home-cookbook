@@ -118,3 +118,12 @@ label.field-label { display: block; margin-top: 8px; font-size: .85rem; color: #
   .edit-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
   .ing-row { grid-template-columns: 80px 96px 1fr 44px; }
 }
+
+/* Edit rows: fields on one line, move/remove tools on the next (T-02) */
+.item { border-bottom: 1px solid #ddd; padding-bottom: 6px; margin-bottom: 6px; }
+.ing-row { grid-template-columns: 84px 80px 1fr; }
+.step-row { grid-template-columns: 24px 1fr; }
+.step-num { padding-top: 10px; }
+.row-tools { display: flex; justify-content: flex-end; gap: 4px; }
+.item .error-text { margin: 2px 0 0; }
+@media (min-width: 768px) { .ing-row { grid-template-columns: 80px 96px 1fr; } }

@@ -45,12 +45,7 @@ def _cannot_start(error: Exception) -> SystemExit:
     return SystemExit(EXIT_CANNOT_START)
 
 
-def main() -> None:
-    try:
-        settings = Settings.from_env()
-    except InvalidSettingsError as error:
-        raise _cannot_start(error) from error
-    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
+def _serve(settings: Settings) -> None:
     try:
         server = create_server(
             create_app(settings),
@@ -61,8 +56,18 @@ def main() -> None:
         )
     except OSError as error:  # port in use, data folder not writable, unknown host
         raise _cannot_start(error) from error
-    signal.signal(signal.SIGTERM, _stop)
     logger.info(banner(settings.port))
+    server.run()
+
+
+def main() -> None:
+    try:
+        settings = Settings.from_env()
+    except InvalidSettingsError as error:
+        raise _cannot_start(error) from error
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
+    # Stop cleanly even if asked to stop while starting up (the port listens before the banner).
+    signal.signal(signal.SIGTERM, _stop)
     with contextlib.suppress(KeyboardInterrupt):
-        server.run()
+        _serve(settings)
     logger.info("Home Cookbook stopped")

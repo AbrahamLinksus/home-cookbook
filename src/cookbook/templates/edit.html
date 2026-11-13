@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}{{ "Edit recipe" if recipe else "New recipe" }} · Home Cookbook{% endblock %}
+{% block content %}
+<form id="recipe-form" novalidate data-testid="recipe-form"
+      data-recipe-id="{{ recipe.id if recipe else '' }}"
+      data-version="{{ version if version is not none else '' }}">
+  <div class="box box-bar">
+    <button type="button" data-testid="cancel">Cancel</button>
+    <strong>{{ "Edit recipe" if recipe else "New recipe" }}</strong>
+    <button type="submit" class="primary" data-testid="save">Save</button>
+  </div>
+  <div class="box">
+    <label class="field-label" for="title-input">Title</label>
+    <input type="text" id="title-input" name="title" autocomplete="off"
+           data-key="title" data-error-testid="title-error" data-testid="title-input">
+    <label class="field-label" for="servings-input">Servings</label>
+    <input type="text" inputmode="numeric" id="servings-input" name="servings" autocomplete="off"
+           data-key="servings" data-testid="servings-field" style="width:96px">
+  </div>
+  <div class="edit-cols">
+    <section class="box" aria-labelledby="ing-heading">
+      <strong id="ing-heading">Ingredients</strong>
+      <div id="ingredient-rows" data-testid="ingredient-rows"></div>
+      <button type="button" class="add-row" data-testid="add-ingredient"
+              data-key="ingredients" data-error-testid="ingredients-error">+ Add ingredient</button>
+      <p class="muted">No amount = never scaled.</p>
+    </section>
+    <section class="box" aria-labelledby="steps-heading">
+      <strong id="steps-heading">Steps</strong>
+      <div id="step-rows" data-testid="step-rows"></div>
+      <button type="button" class="add-row" data-testid="add-step"
+              data-key="steps" data-error-testid="steps-error">+ Add step</button>
+    </section>
+  </div>
+</form>
+
+<template id="ingredient-template">
+  <div class="item" data-testid="ingredient-row">
+    <div class="ing-row">
+      <input type="text" data-field="amount" aria-label="Amount" placeholder="Amount" autocomplete="off">
+      <input type="text" data-field="unit" aria-label="Unit" placeholder="Unit" autocomplete="off">
+      <input type="text" data-field="name" aria-label="Name" placeholder="Name" autocomplete="off">
+    </div>
+    <div class="row-tools">
+      <button type="button" data-action="up" aria-label="Move ingredient up" data-testid="ingredient-up">&#9650;</button>
+      <button type="button" data-action="down" aria-label="Move ingredient down" data-testid="ingredient-down">&#9660;</button>
+      <button type="button" data-action="remove" aria-label="Remove ingredient" data-testid="ingredient-remove">&#10005;</button>
+    </div>
+  </div>
+</template>
+<template id="step-template">
+  <div class="item" data-testid="step-row">
+    <div class="step-row">
+      <span class="step-num" aria-hidden="true"></span>
+      <textarea data-field="step" aria-label="Step" rows="2"></textarea>
+    </div>
+    <div class="row-tools">
+      <button type="button" data-action="up" aria-label="Move step up" data-testid="step-up">&#9650;</button>
+      <button type="button" data-action="down" aria-label="Move step down" data-testid="step-down">&#9660;</button>
+      <button type="button" data-action="remove" aria-label="Remove step" data-testid="step-remove">&#10005;</button>
+    </div>
+  </div>
+</template>
+<script type="application/json" id="form-data">{{ form_json|tojson }}</script>
+{% endblock %}
+{% block scripts %}
+<script type="module" src="{{ url_for('static', filename='js/edit.js') }}"></script>
+{% endblock %}

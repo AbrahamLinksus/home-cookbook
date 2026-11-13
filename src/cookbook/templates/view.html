@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}{{ recipe.title }} · Home Cookbook{% endblock %}
+{% block header_actions %}
+<a class="btn" href="/" data-testid="back">&#8249; Recipes</a>
+{% endblock %}
+{% block content %}
+<div class="box box-bar">
+  <h1 data-testid="recipe-title">{{ recipe.title }}</h1>
+  <span aria-hidden="true" style="font-size:24px">{{ "★" if recipe.favourite else "☆" }}</span>
+</div>
+<div class="box">
+  <strong>Servings</strong>
+  <span data-testid="servings">{{ recipe.servings }}</span>
+</div>
+<div class="view-cols">
+  <section class="box">
+    <strong>Ingredients</strong>
+    <ul data-testid="ingredient-list">
+      {% for line in lines %}
+      <li data-testid="ingredient-line" data-num="{{ line.qty_num if line.qty_num is not none else '' }}"
+          data-den="{{ line.qty_den if line.qty_den is not none else '' }}"
+          data-unit="{{ line.unit }}" data-text="{{ line.amount_text or '' }}">{{ [line.amount_text, line.unit, line.name] | select | join(" ") }}</li>
+      {% endfor %}
+    </ul>
+  </section>
+  <section class="box">
+    <strong>Steps</strong>
+    <ol data-testid="step-list">
+      {% for step in recipe.steps %}<li data-testid="step">{{ step }}</li>{% endfor %}
+    </ol>
+  </section>
+</div>
+{% endblock %}

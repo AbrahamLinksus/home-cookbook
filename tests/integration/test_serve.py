@@ -6,7 +6,9 @@ import sqlite3  # noqa: TID251 (reads PRAGMA user_version directly)
 import subprocess
 import sys
 import time
+from collections.abc import Iterator
 from pathlib import Path
+from typing import IO
 
 import pytest
 
@@ -42,15 +44,26 @@ def _wait_until_listening(port: int) -> None:
     pytest.fail("the app never started listening")
 
 
+def _lines_until(stream: IO[str], marker: str) -> Iterator[str]:
+    for line in iter(stream.readline, ""):
+        yield line
+        if marker in line:
+            return
+
+
 def test_serve_starts_logs_banner_creates_db_and_stops_cleanly(tmp_path: Path) -> None:
     db = tmp_path / "data" / "cookbook.db"
     port = _free_port()
     proc = _run({"COOKBOOK_DB": str(db), "COOKBOOK_PORT": str(port), "COOKBOOK_HOST": "127.0.0.1"})
+    assert proc.stderr is not None
     try:
         _wait_until_listening(port)
+        # Listening comes before the banner; stop only once the banner is out.
+        err = "".join(_lines_until(proc.stderr, "Home Cookbook is running."))
     finally:
         proc.terminate()
-    _, err = proc.communicate(timeout=10)
+    err += proc.stderr.read()
+    proc.wait(timeout=10)
 
     assert proc.returncode == 0
     assert "Home Cookbook is running. On your phone or laptop open: http://" in err

@@ -24,7 +24,7 @@ DISCARD_CHANGES: Final = "Discard changes?"
 
 RESTORED_RENAMED: Final = "'{title}' is back as '{renamed}' because another recipe now has its name"
 
-# Texts the browser shows (undo.js, api.js); base.html renders them into <body data-texts>.
+# Texts the browser shows (undo.js, api.js, edit.js); base.html renders them into <body data-texts>.
 # "{name}" placeholders are filled in by api.js uiText().
 UI_TEXTS: Final = {
     "undo": "Undo",
@@ -33,6 +33,7 @@ UI_TEXTS: Final = {
     "restored_renamed": RESTORED_RENAMED,
     "undo_failed": "Could not undo",
     "network": "Could not reach the home computer. Please try again",
+    "discard_changes": DISCARD_CHANGES,
 }
 
 FIELD_MESSAGES: Final = {
