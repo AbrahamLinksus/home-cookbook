@@ -34,6 +34,9 @@
 | D-29 | 2026-11-13 | Environment | Approved: Python 3.12 + pinned packages, Playwright 1.49.1, check.sh 7 gates, pre-commit hook | Undo: delete .venv and generated files | Request changes | plan |
 | D-30 | 2026-11-13 | G-6 import over an existing title | Keep skipping; the import result names each skipped recipe and says "to restore one, delete it first, then import again" | Folds into T-04 · if wrong: add a replace picker later (~1 task) | Offer to replace · leave as is | plan |
 | D-31 | 2026-11-13 | Plan | Approved: 10 tasks in 3 milestones | Build starts with T-01 | Request changes | plan |
+| D-32 | 2026-11-13 | Guard vs DNS rebinding (review M-1) | Answer only when Host is an IP literal, localhost or *.local; else 403 | Malicious sites can't reach the app via the family's browser · open the app by IP or .local name; router names like desktop.lan get 403 | Accept the risk | T-01 |
+| D-33 | 2026-11-13 | "1,000" amounts (review m-6) | A comma followed by exactly 3 digits is refused as unclear; "0,5", "2,25" still work (refines D-22) | No silent 1,000→1 · if wrong: ~15 min to change | Treat as thousands · keep as is | T-01 |
+| D-34 | 2026-11-13 | Review minors in shared code | Fix m-1, m-2, m-3, m-7, m-9 in T-01 | One extra fix round | Fix 4 · log all | T-01 |
 
 ## Tier 2 — decided by agents (overrule any time)
 | ID | Date | Decision | Chosen | Agent | Task |

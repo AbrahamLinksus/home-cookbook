@@ -12,9 +12,9 @@
 | Owner mode | builder: plain words, technical detail collapsed |
 | Size | medium · signals: backend, database, deployment (home Wi-Fi) · 9 stories · full track |
 | Milestone | M1 · First recipe end to end |
-| Next step | T-01 Foundation · backend-coder |
+| Next step | T-02 Add a recipe and read it on the phone |
 | Started | 2026-11-13 07:50 +05:30 (cost.py --since) · Budget 0 (no cap) |
-| Last updated | 2026-11-13 08:33 +05:30 |
+| Last updated | 2026-11-13 |
 
 ## Config
 | Field | Value |
@@ -50,6 +50,12 @@
 ## Known minors
 | Task | Where | Fix | Size |
 |---|---|---|---|
+| T-01 | domain/amounts.py:24 | Move UnclearAmountError into domain/errors.py (CONVENTIONS §5) (n-1) | S |
+| T-01 | adapters/sqlite_repo.py:124 | Catch sqlite3.DatabaseError ("file is not a database") → one-line start-up message (n-2) | S |
+| T-01 | web/guard.py:29 | Test trailing-dot / missing Host (403); optionally strip trailing dot (n-3) | S |
+| T-01 | docs/LLD.md §6.5, §6.4 | Add D-32 Host rule and `unclear_amount` code — M1 as-built sync (n-4) | S |
+| T-01 | static/js/api.js | uiText() returns "" for an unknown key (n-5) | S |
+| T-01 | various | Earlier review minors m-4, m-5, m-8, m-10, m-11, m-12, rest of m-9 — see T-01 review notes | S–M |
 
 ## Context additions
 | Role | Also read | Why (from gap report) |
