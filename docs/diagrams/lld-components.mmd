@@ -1,0 +1,42 @@
+flowchart LR
+    subgraph Browser["Phone or laptop browser"]
+        Pages["Templates: list, view, edit<br/>(src/cookbook/templates)"]
+        JS["Page JS: list.js, view.js, edit.js, menu.js"]
+        Shared["Shared JS: api.js, undo.js"]
+        Scaler["scaler.js<br/>LLD §8 (display only)"]
+    end
+    subgraph Home["Home computer · uv run cookbook · 0.0.0.0:8765"]
+        Serve["app/serve.py<br/>waitress + address banner"]
+        Factory["app/factory.py<br/>create_app (composition root)"]
+        Guard["web/guard.py<br/>home-network only, same-origin writes"]
+        Web["web/pages.py, web/api.py<br/>web/errors.py, web/messages.py"]
+        Keeper["services/keeper.py<br/>LLD §3"]
+        Finder["services/finder.py<br/>LLD §4"]
+        Backup["services/backup/<br/>LLD §5"]
+        Domain["domain/<br/>models, rules, amounts, search, errors, ports<br/>LLD §1"]
+        Repo["adapters/sqlite_repo.py, clock.py<br/>LLD §2"]
+        DB[("cookbook.db<br/>SQLite WAL, synchronous=FULL")]
+    end
+    File[/"cookbook-YYYY-MM-DD.json<br/>format_version 1"/]
+
+    JS --> Shared
+    JS --> Scaler
+    Shared -->|"HTTP JSON / HTML fragments"| Guard
+    Pages -->|"GET pages"| Guard
+    Serve --> Factory
+    Factory --> Web
+    Factory --> Repo
+    Guard --> Web
+    Web --> Keeper
+    Web --> Finder
+    Web --> Backup
+    Keeper --> Domain
+    Finder --> Domain
+    Backup --> Domain
+    Repo --> Domain
+    Repo --> DB
+    Keeper -. "RecipeRepository, Clock ports" .-> Repo
+    Finder -. "RecipeRepository port" .-> Repo
+    Backup -. "RecipeRepository, Clock ports" .-> Repo
+    Backup -->|"download"| File
+    File -->|"upload"| Backup

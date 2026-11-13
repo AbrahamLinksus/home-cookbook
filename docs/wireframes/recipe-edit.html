@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wireframe · Recipe edit</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: sans-serif; color: #222; background: #fff; }
+  .page { max-width: 390px; margin: 0 auto; padding: 12px; }
+  .box { border: 2px solid #555; padding: 8px; margin-bottom: 8px; }
+  .bar { display: flex; justify-content: space-between; align-items: center; }
+  .btn { border: 2px solid #333; padding: 6px 10px; background: #ddd; display: inline-block; }
+  .btn.primary { background: #444; color: #fff; }
+  label { display: block; font-size: 13px; color: #555; margin-top: 6px; }
+  .field { border: 2px solid #777; padding: 8px; min-height: 36px; }
+  .field.error { border: 3px solid #000; }
+  .err { font-size: 12px; font-weight: bold; }
+  .ing { display: grid; grid-template-columns: 56px 64px 1fr 28px; gap: 4px; margin: 4px 0; }
+  .step { display: grid; grid-template-columns: 24px 1fr 28px 28px; gap: 4px; margin: 4px 0; align-items: center; }
+  .x { border: 2px solid #777; text-align: center; padding: 6px 0; }
+  .add { border: 2px dashed #777; padding: 6px; text-align: center; margin-top: 4px; }
+  .dialog { border: 3px solid #333; padding: 10px; background: #eee; margin-top: 16px; }
+  .muted { color: #777; }
+  .dialog .btn { margin: 2px 0; }
+  .note { font-size: 12px; color: #555; border-left: 3px solid #999; padding-left: 6px; margin: 6px 0; }
+  @media (min-width: 900px) {
+    .page { max-width: 1000px; }
+    .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="bar box">
+    <span class="btn">Cancel</span>
+    <strong>Edit recipe</strong>
+    <span class="btn primary">Save</span>
+  </div>
+
+  <div class="box">
+    <label>Title</label>
+    <div class="field">Grandma's Apple Pie</div>
+    <label>Servings</label>
+    <div class="field" style="width:80px">8</div>
+  </div>
+
+  <div class="cols">
+    <div class="box">
+      <strong>Ingredients</strong>
+      <div class="ing muted" style="font-size:12px"><span>Amount</span><span>Unit</span><span>Name</span><span></span></div>
+      <div class="ing"><div class="field">2½</div><div class="field">cups</div><div class="field">flour</div><div class="x">✕</div></div>
+      <div class="ing"><div class="field">1</div><div class="field">cup</div><div class="field">butter</div><div class="x">✕</div></div>
+      <div class="ing"><div class="field">6</div><div class="field"></div><div class="field">apples</div><div class="x">✕</div></div>
+      <div class="ing"><div class="field">¾</div><div class="field">cup</div><div class="field">sugar</div><div class="x">✕</div></div>
+      <div class="ing"><div class="field">1</div><div class="field">tsp</div><div class="field">cinnamon</div><div class="x">✕</div></div>
+      <div class="ing"><div class="field"></div><div class="field"></div><div class="field">salt, to taste</div><div class="x">✕</div></div>
+      <div class="add">+ Add ingredient</div>
+      <div class="note">No amount = never scaled.</div>
+    </div>
+
+    <div class="box">
+      <strong>Steps</strong>
+      <div class="step"><span>1</span><div class="field">Preheat oven to 200°C.</div><div class="x">↕</div><div class="x">✕</div></div>
+      <div class="step"><span>2</span><div class="field">Rub the butter into the flour and salt…</div><div class="x">↕</div><div class="x">✕</div></div>
+      <div class="step"><span>3</span><div class="field">Peel, core and slice the apples…</div><div class="x">↕</div><div class="x">✕</div></div>
+      <div class="step"><span>4</span><div class="field">Line the dish with pastry…</div><div class="x">↕</div><div class="x">✕</div></div>
+      <div class="step"><span>5</span><div class="field">Bake 45 minutes until golden.</div><div class="x">↕</div><div class="x">✕</div></div>
+      <div class="add">+ Add step</div>
+    </div>
+  </div>
+
+  <div class="box">
+    <strong>Error state (empty title)</strong>
+    <label>Title</label>
+    <div class="field error"></div>
+    <div class="err">Please enter a title</div>
+    <label>Servings</label>
+    <div class="field error" style="width:80px">0</div>
+    <div class="err">Servings must be a whole number of 1 or more</div>
+  </div>
+
+  <div class="box">
+    <strong>Error state (title already used)</strong>
+    <label>Title</label>
+    <div class="field error">pancakes</div>
+    <div class="err">You already have a recipe called "Pancakes". Please choose another name, e.g. "Pancakes (Gran's)".</div>
+    <span class="muted" style="font-size:12px">Form stays open; nothing is saved until the title is changed.</span>
+  </div>
+
+  <div class="dialog">
+    <strong>This recipe changed on another device</strong><br>
+    <span class="muted">Shown on Save when the recipe was saved elsewhere after you opened this form.</span><br><br>
+    <span class="btn">Reload theirs</span> <span class="btn primary">Keep mine</span><br>
+    <span class="muted" style="font-size:12px">Reload theirs: your changes are dropped and their version opens. Keep mine: your version is saved over theirs.</span>
+  </div>
+
+  <div class="box">
+    <strong>Error state (amount not one number)</strong>
+    <div class="ing muted" style="font-size:12px"><span>Amount</span><span>Unit</span><span>Name</span><span></span></div>
+    <div class="ing"><div class="field error">2-3</div><div class="field"></div><div class="field">eggs</div><div class="x">✕</div></div>
+    <div class="err">Enter one amount, e.g. 2 or 2½</div>
+    <span class="muted" style="font-size:12px">Shown under the amount on Save; form stays open, nothing is saved. Ranges ("2-3", "2 to 3") are refused.</span>
+  </div>
+
+  <div class="dialog">
+    <strong>This recipe was deleted on another device</strong><br>
+    <span class="muted">Shown on Save when "Lemon Cake" was deleted on another device while this form was open. Your typing is kept behind the dialog.</span><br><br>
+    <span class="btn">Discard my changes</span> <span class="btn primary">Save as new</span><br>
+    <span class="muted" style="font-size:12px">Save as new: your version is saved as a new recipe "Lemon Cake" and opens in read view. Discard my changes: back to the recipe list; "Lemon Cake" stays deleted.</span>
+  </div>
+
+  <div class="box" style="margin-top:16px">
+    <strong>Error state (after Save as new, title now used)</strong>
+    <label>Title</label>
+    <div class="field error">Lemon Cake</div>
+    <div class="err">You already have a recipe called 'Lemon Cake'. Please choose another name, e.g. 'Lemon Cake (Gran's)'</div>
+    <span class="muted" style="font-size:12px">Happens when the other device tapped Undo first. Typing is kept; the form now saves as a new recipe, e.g. as "Lemon Cake (Gran's)".</span>
+  </div>
+
+  <div class="dialog">
+    <strong>Discard changes?</strong><br>
+    <span class="muted">Shown when leaving with unsaved changes.</span><br><br>
+    <span class="btn">Keep editing</span> <span class="btn primary">Discard</span>
+  </div>
+</div>
+</body>
+</html>

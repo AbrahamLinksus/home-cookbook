@@ -1,0 +1,14 @@
+erDiagram
+    RECIPE {
+        INTEGER id PK
+        TEXT title "as typed, trimmed"
+        TEXT title_key "rules.title_key; UNIQUE where deleted_at IS NULL"
+        INTEGER servings "CHECK >= 1"
+        TEXT ingredients_json "[{amount: str|null, unit, name}] in order"
+        TEXT steps_json "[str] in order"
+        INTEGER favourite "0/1; not part of version"
+        INTEGER version "starts 1; +1 on every content save"
+        TEXT created_at "ISO 8601 UTC, Z"
+        TEXT updated_at "ISO 8601 UTC, Z"
+        TEXT deleted_at "NULL = live; set = waiting out undo"
+    }

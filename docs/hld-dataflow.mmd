@@ -1,0 +1,24 @@
+flowchart LR
+    Owner([Owner on phone or laptop])
+    Screens[Cookbook screens in the browser<br/>list, view, edit]
+    Scaler[Servings scaler<br/>kitchen-friendly amounts]
+    Server[Home cookbook server<br/>on the home computer]
+    Recipes[Recipe keeper<br/>save, edit, delete with undo, star,<br/>same-title check, changed-elsewhere check]
+    Search[Recipe finder<br/>by name or by ingredient]
+    Backup[Backup<br/>export file and import file]
+    Store[(Recipe store<br/>one data file on the home computer)]
+    File[/Export file on the owner's device/]
+
+    Owner -->|taps and types| Screens
+    Screens -->|amounts and new servings| Scaler
+    Scaler -->|scaled amounts, display only| Screens
+    Screens -->|requests over home Wi-Fi| Server
+    Server -->|recipe changes| Recipes
+    Server -->|search words| Search
+    Server -->|export or import request| Backup
+    Recipes -->|read and write recipes| Store
+    Search -->|read recipes| Store
+    Backup -->|read all, or add new recipes all at once| Store
+    Backup -->|downloads| File
+    File -->|chosen for import| Backup
+    Server -->|recipes, results, messages| Screens

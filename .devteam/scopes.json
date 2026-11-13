@@ -1,0 +1,17 @@
+{
+  "_comment": "Home Cookbook layout (LLD §0.2): one Python package under src/cookbook/. Templates and static files belong to the frontend-coder; all Python belongs to the backend-coder.",
+  "agents": {
+    "backend-coder": {
+      "deny": [
+        "src/cookbook/templates/**",
+        "src/cookbook/static/**"
+      ]
+    },
+    "frontend-coder": {
+      "deny": [
+        "src/cookbook/**/*.py",
+        "src/**/*.py"
+      ]
+    }
+  }
+}

@@ -1,0 +1,23 @@
+sequenceDiagram
+    participant E as edit.js (laptop)
+    participant A as web/api.py
+    participant K as RecipeKeeper
+    participant R as SqliteRecipeRepository
+    E->>A: PUT /api/recipes/7 {base_version: 3, recipe}
+    A->>K: update(7, draft, 3)
+    K->>R: get(7, include_deleted=True)
+    alt missing or deleted_at set (G-9)
+        K-->>A: DeletedElsewhere
+        A-->>E: 410 deleted_elsewhere
+        Note over E: typed form kept, dialog: Save as new / Discard my changes
+    else stored version 4 differs from 3
+        K-->>A: ChangedElsewhere(current_version=4)
+        A-->>E: 409 changed_elsewhere
+        Note over E: dialog: Reload theirs (open /recipes/7) / Keep mine (PUT again with base_version 4)
+    else versions match
+        K->>R: update_if_version(7, draft, 3, now)
+        R-->>K: Recipe version 4 (None means race lost: ChangedElsewhere)
+        K-->>A: Recipe
+        A-->>E: 200 {id: 7, version: 4}
+        Note over E: navigate to /recipes/7 (read view)
+    end

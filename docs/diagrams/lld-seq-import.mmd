@@ -1,0 +1,27 @@
+sequenceDiagram
+    participant M as menu.js
+    participant A as web/api.py
+    participant B as BackupService
+    participant F as backup/formats.py
+    participant R as SqliteRecipeRepository
+    M->>A: POST /api/import (multipart file)
+    A->>B: import_file(bytes)
+    B->>B: UTF-8 decode, json.loads
+    B->>F: check marker "home-cookbook-export" + format_version
+    alt not an export / damaged / over 5 MB
+        A-->>M: 400 not_an_export (nothing changed)
+    else format_version newer than the app
+        A-->>M: 400 newer_version (nothing changed)
+    else known version
+        B->>F: upgrade(doc) step by step v_found to CURRENT
+        B->>F: from_document(doc, now) (every recipe through parse_draft, count check)
+        B->>R: live_title_keys()
+        Note over B: same title as app: skip, repeated inside file: free_title adds " (2)"
+        B->>R: add_many(new recipes) in one transaction
+        alt clash with a save made meanwhile
+            R-->>B: rollback, DuplicateTitle
+            A-->>M: 409 import_interrupted (nothing changed)
+        else ok
+            A-->>M: 200 {imported, skipped, renamed, message}
+        end
+    end

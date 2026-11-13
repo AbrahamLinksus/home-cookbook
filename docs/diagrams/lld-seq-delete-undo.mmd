@@ -1,0 +1,22 @@
+sequenceDiagram
+    participant V as view.js / undo.js (phone)
+    participant A as web/api.py
+    participant K as RecipeKeeper
+    participant R as SqliteRecipeRepository
+    V->>A: DELETE /api/recipes/7
+    A->>K: delete(7)
+    K->>R: mark_deleted(7, now)
+    Note over R: same transaction purges every other pending delete (it becomes final)
+    A-->>V: 200 {id: 7, title, undo_seconds: 10}
+    Note over V: sessionStorage {id, title, until}, go to list, bar "'Lemon Cake' deleted · Undo" survives page changes
+    alt Undo tapped within the window
+        V->>A: POST /api/recipes/7/restore
+        A->>K: restore(7)
+        K->>K: now <= deleted_at + 10 s + 2 s grace?
+        K->>R: unmark_deleted(7, free_title(title, live keys))
+        A-->>V: 200 {id, title, renamed_to}
+    else too late (or browser closed)
+        V->>A: POST /api/recipes/7/restore
+        A-->>V: 410 undo_expired
+        Note over K,R: recipe stays hidden from list and search, purged on next list or delete
+    end
