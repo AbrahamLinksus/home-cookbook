@@ -1,7 +1,7 @@
 # Low-level design — Home Cookbook
 
 > Numbered, self-contained sections: brief a task with only the sections it needs (e.g. `LLD §1, §3`). Numbers are stable: update in place, new sections get new numbers, removed ones are marked `(removed)`.
-> Size: medium (cap 400 lines). From SPEC, HLD (D-14), research, DECISIONS D-01..D-34, A-01..A-04. As-built through M1 (T-01, T-02); "Built:" lines say which parts exist yet. Diagram sources: `.results/plan/lld-components.mmd`, `lld-erd.mmd`, `lld-seq-save.mmd`, `lld-seq-delete-undo.mmd`, `lld-seq-import.mmd`.
+> Size: medium (cap 400 lines). From SPEC, HLD (D-14), research, DECISIONS D-01..D-36, A-01..A-14. As-built through M2 (T-01..T-04); "Built:" lines say which parts exist yet. Diagram sources: `.results/plan/lld-components.mmd`, `lld-erd.mmd`, `lld-seq-save.mmd`, `lld-seq-delete-undo.mmd`, `lld-seq-import.mmd`.
 
 ## §0 Overview
 ### §0.1 Stack
@@ -62,6 +62,7 @@ forbidden_modules = ["flask", "werkzeug", "waitress"]
 
 ### §0.4 Packages
 Python pinned to 3.12 via uv (`requires-python = "~=3.12.0"`). Exact pins live in `uv.lock`; "≥" rows take the latest stable on env-setup day (not verified by me on this date).
+
 | Package | Version | Purpose | Plain words | Alternative rejected |
 |---|---|---|---|---|
 | flask | 3.1.3 | Web pages, JSON endpoints | The part that answers the browser | FastAPI, Django |
@@ -82,12 +83,14 @@ No JavaScript packages, no Node.
 
 ### §0.5 Config and secrets
 No secrets exist. `Settings.from_env()` (`app/config.py`) reads, all documented in `.env.example`:
+
 | Env var | Default | Meaning |
 |---|---|---|
 | `COOKBOOK_HOST` | `0.0.0.0` | Interface to listen on (all home-network interfaces) |
 | `COOKBOOK_PORT` | `8765` | Port the phone/laptop use |
 | `COOKBOOK_DB` | `$XDG_DATA_HOME/home-cookbook/cookbook.db` (else `~/.local/share/...`) | Data file, outside the code folder so reinstalling code keeps recipes |
 | `COOKBOOK_UNDO_SECONDS` | `10` | Undo bar length (whole number 1–3600); server accepts undo for this + 2 s grace |
+
 `Settings(db_path, host="0.0.0.0", port=8765, undo_seconds=10)` is a frozen dataclass; `from_env(env=None)` treats an empty variable as unset. Port must be a whole number 1–65535. Invalid values → `InvalidSettingsError` (in `config.py`) → `serve.main()` exits 2 with one line on stderr (§0.6). Tests build `Settings(...)` directly.
 
 ### §0.6 Starting the app and reaching it from the phone
@@ -116,24 +119,19 @@ class Recipe: id: int; title: str; servings: int; ingredients: tuple[Ingredient,
               def draft(self) -> RecipeDraft
 class RecipeSummary: id: int; title: str; servings: int; favourite: bool
 class SearchBy(StrEnum): NAME = "name"; INGREDIENT = "ingredient"
-# rules.py
+# rules.py — MAX_TITLE = 200 (also caps import renames, §5.5)
 def title_key(title: str) -> str                    # NFC, strip, casefold: the one same-title rule (F-1, F-6)
 def parse_draft(raw: Mapping[str, object]) -> RecipeDraft     # raises InvalidRecipe(fields)
 def list_order(recipes: Iterable[Recipe]) -> list[RecipeSummary]  # favourites first, then title_key A–Z, then id
 def free_title(title: str, taken_keys: set[str]) -> str      # "T" or first free "T (2)", "T (3)"…
-# amounts.py
-def parse_amount(text: str) -> Fraction             # raises ValueError; UnclearAmountError(ValueError) for "1,000" (D-33); §1.4
-class UnclearAmountError(ValueError)                 # in amounts.py, internal to parse_draft (never reaches web)
-def display_amount(text: str) -> str                # kitchen form of a valid amount ("2.5"→"2½", "1 1/2"→"1½"); §1.4
-# search.py
-def normalise(text: str) -> str                     # NFKD, drop accents, drop ' and ’, casefold, collapse spaces
-def matches(recipe: Recipe, query: str, by: SearchBy) -> bool
+def parse_amount(text: str) -> Fraction  # amounts.py; ValueError; UnclearAmountError(ValueError) for "1,000" (D-33, internal); §1.4
+def display_amount(text: str) -> str     # amounts.py; kitchen form of a valid amount ("2.5"→"2½", "1 1/2"→"1½"); §1.4
+def normalise(text: str) -> str          # search.py; NFKD, drop accents, drop ' and ’, casefold, collapse spaces
+def matches(recipe: Recipe, query: str, by: SearchBy) -> bool   # search.py
 # errors.py — all subclass CookbookError
 InvalidRecipe(fields: dict[str, str]) · DuplicateTitle(existing_title) · RecipeNotFound · ChangedElsewhere(current_version)
 DeletedElsewhere · UndoExpired(title) · NotAnExport(reason) · NewerExportFormat(found: int, supported: int) · ImportInterrupted
-# ports.py — the two variation points
-class RecipeRepository(Protocol): ...               # methods in §2.1
-class Clock(Protocol): def now(self) -> datetime
+class RecipeRepository(Protocol): ...; class Clock(Protocol): def now(self) -> datetime   # ports.py, the two variation points (§2.1)
 ```
 
 ### §1.2 Validation rules (`parse_draft`)
@@ -143,6 +141,7 @@ class Clock(Protocol): def now(self) -> datetime
 | servings | whole number 1–1000 (int, or ASCII digit string; bool refused); blank string → `required`, else `not_whole` | `servings` |
 | ingredients | list ≤ 100 (missing/`null` = empty); rows with amount, unit and name all blank are dropped; name 1–200 required; unit ≤ 30; amount blank → `None`, else must pass `parse_amount` (`bad_amount`, or `unclear_amount` for "1,000", D-33) | `ingredients.<i>.name` / `.unit` / `.amount`; list-level `ingredients`: not a list → `required`, > 100 rows → `too_long` |
 | steps | list ≤ 100 of str; blank dropped; each ≤ 10 000 chars | `steps.<i>`; list-level `steps` as for ingredients |
+
 `<i>` indexes the array **as sent** (blank rows count), so it matches the form's row position (§7.4). Every problem is reported at once. Error texts live in `web/messages.py` (§6.4); `fields` maps key → short code (`required`, `too_long`, `not_whole`, `bad_amount`, `unclear_amount`; `range` reserved, not produced).
 
 ### §1.4 Edge cases (storage in §2.3, file format in §5.3)
@@ -158,8 +157,7 @@ class Clock(Protocol): def now(self) -> datetime
 ```python
 class SqliteRecipeRepository:            # implements domain.ports.RecipeRepository
     def __init__(self, db_path: Path) -> None          # opens a new connection per call, timeout 5 s (thread-safe under waitress)
-    def init_schema(self) -> None                      # mkdir parents; migrate via PRAGMA user_version, one transaction
-                                                       # per migration; sqlite3.OperationalError → OSError (start-up, §0.6)
+    def init_schema(self) -> None   # mkdir parents; migrate via PRAGMA user_version, one transaction per migration; OperationalError → OSError (§0.6)
     def list_live(self) -> list[Recipe]
     def get(self, recipe_id: int, *, include_deleted: bool = False) -> Recipe | None
     def live_title_keys(self) -> set[str]
@@ -226,6 +224,7 @@ class RecipeKeeper:
 | PUT | `/api/recipes/<id>/favourite` | `{"favourite": bool}` | 200 `{"favourite"}` | 410 `deleted_elsewhere` |
 | DELETE | `/api/recipes/<id>` | — | 200 `{"id", "title", "undo_seconds"}` | 404 `not_found` |
 | POST | `/api/recipes/<id>/restore` | — | 200 `{"id", "title", "renamed_to": str\|null}` | 410 `undo_expired` |
+
 `RecipeIn` = `{"title": str, "servings": int|str, "ingredients": [{"amount": str, "unit": str, "name": str}], "steps": [str]}`. A body that is not a JSON object holding a `recipe` object → 400 `bad_request` (`web/api.py` `_recipe_in()`); 422 `fields` keys index the arrays as sent (§1.2).
 Built (M1): `POST /api/recipes` (blueprint `api`, `url_prefix="/api"`, in `web/api.py`). Pages: `GET /recipes/new` (built), `GET /recipes/<id>` read view (built, §7.3; 404 page if not live), `GET /recipes/<id>/edit` (planned) — context in §7.4.
 
@@ -265,27 +264,31 @@ Runs on the home computer over all ~500 rows in Python (no index; well under 1 s
 
 ### §5.1 Interfaces / signatures
 ```python
-CURRENT_FORMAT_VERSION: Final = 1
+# formats.py (pure: dicts in, dicts/NewRecipe out)
+FORMAT_MARKER: Final = "home-cookbook-export"; CURRENT_FORMAT_VERSION: Final = 1
 UPGRADES: Final[dict[int, Callable[[dict[str, Any]], dict[str, Any]]]] = {}   # n → step from n to n+1
-def upgrade(doc: dict[str, Any]) -> dict[str, Any]     # applies UPGRADES[v] for v = found … CURRENT-1
-def to_document(recipes: Sequence[Recipe], exported_at: datetime, app_version: str) -> dict[str, Any]
-def from_document(doc: dict[str, Any], now: datetime) -> list[NewRecipe]   # NotAnExport on any bad field
+def upgrade(doc: dict[str, Any]) -> dict[str, Any]   # marker/version checks (§5.5), then UPGRADES[v] for v = found … CURRENT-1
+def to_document(recipes: Sequence[Recipe], exported_at: datetime, app_version: str) -> dict[str, Any]  # dates UTC "…Z", whole s (A-11)
+def from_document(doc: dict[str, Any], now: datetime) -> list[NewRecipe]   # NotAnExport on any bad field/count (§5.5)
+# service.py
 @dataclass(frozen=True) class ExportFile: filename: str; content: bytes
 @dataclass(frozen=True) class ImportResult: imported: int; skipped: int; renamed: int; skipped_titles: tuple[str, ...] = ()
-    # skipped_titles (D-30): each skipped recipe's title as spelled in the file (after parse_draft trim), file order;
-    # invariant skipped == len(skipped_titles)
+    # skipped_titles (D-30): each skipped title as spelled in the file (after trim), file order; skipped == len(skipped_titles)
 class BackupService:
     def __init__(self, repo: RecipeRepository, clock: Clock, app_version: str) -> None
-    def export_all(self) -> ExportFile               # filename cookbook-YYYY-MM-DD.json (home computer's local date)
-    def import_file(self, data: bytes) -> ImportResult   # NotAnExport, NewerExportFormat
+    def export_all(self) -> ExportFile   # list_live → to_document → json.dumps(ensure_ascii=False, indent=2) → UTF-8; filename
+                                         # cookbook-YYYY-MM-DD.json from clock.now().astimezone() (local date, A-11)
+    def import_file(self, data: bytes) -> ImportResult   # NotAnExport, NewerExportFormat, ImportInterrupted (§5.4)
 ```
-Built (M1): `ExportFile`, `ImportResult` (incl. `skipped_titles`, verified) and the `BackupService` constructor in `service.py`; `formats.py` and the methods are planned.
+Built (M2): all of the above (T-03 export, T-04 import). Private helpers: `service._load(data)`, `service._plan(incoming, taken)`, `formats._check_types(raw)`, `formats._moment(value, default)`.
 
-### §5.2 Contracts
+### §5.2 Contracts (errors are `{"error": code, "message": str}`, §6.3)
 | Method | Path | Request | Response | Errors |
 |---|---|---|---|---|
-| GET | `/export` | — | 200 `application/json`, `Content-Disposition: attachment; filename="cookbook-2026-11-13.json"` | — |
-| POST | `/api/import` | multipart, field `file` | 200 `{"imported", "skipped", "renamed", "message"}` | 400 `not_an_export`; 400 `newer_version`; 413 → `not_an_export`; 409 `import_interrupted` |
+| GET | `/export` | — | 200 `application/json`, `Content-Disposition: attachment; filename="cookbook-2026-11-13.json"` | — (failures → 500 `error.html`, not under `/api`) |
+| POST | `/api/import` | multipart, field `file` | 200 `{"imported": int, "skipped": int, "renamed": int, "skipped_titles": [str], "message": str}` (`message` = `messages.imported(result)`, §6.4) | 400 `not_an_export` (also when no `file` part); 400 `newer_version`; 409 `import_interrupted`; 413 `not_an_export` (body > 5 MB, §6.3) |
+
+Both routes live in `web/api.py`. `/export` sits outside the blueprint's `/api` prefix, so `api.bp.record_once(_mount_export)` adds it to the app (`app.add_url_rule("/export", endpoint="export", view_func=export_download)`) when the factory registers the blueprint; `factory.py` is unchanged (A-10).
 
 ### §5.3 Export file format, version 1 (frozen at M2)
 UTF-8 JSON, indented 2, non-ASCII kept (readable on a phone, G-12):
@@ -300,12 +303,15 @@ UTF-8 JSON, indented 2, non-ASCII kept (readable on a phone, G-12):
 **Upgrade rule (forever, D-12/A-04):** any change to this shape bumps `format_version` to n+1 and adds `UPGRADES[n]` (pure dict → dict). Existing steps and frozen fixtures `tests/fixtures/exports/v<n>-*.json` are never edited or removed; a test imports every fixture and checks every field. The format is independent of the DB schema (§2.3). A file whose `format_version` is higher than the app's is refused ("made by a newer version"), never guessed at.
 
 ### §5.4 Key sequence (`lld-seq-import.mmd`)
-Decode UTF-8 → `json.loads` → check `format == "home-cookbook-export"` and int `format_version` → `upgrade` → `from_document` (each recipe through `parse_draft`; `recipe_count` must equal `len(recipes)`; missing dates → now) → plan against `live_title_keys()`: same title as the app → skip and record the file's title in `skipped_titles`; repeated title inside the file → `free_title` → `add_many` in one transaction → `ImportResult`.
+`_load`: decode `utf-8-sig` (a leading BOM is accepted) → `json.loads` → must be an object → `upgrade` (marker, version, steps) → `from_document(doc, clock.now())`: `recipes` must be a list and `recipe_count` an int (bool refused) equal to `len(recipes)`; per recipe: must be an object → `_check_types` (strict v1 types, §5.5) → `favourite = raw.get("favourite", False)` → `parse_draft` (`InvalidRecipe` → `NotAnExport`) → `created_at = _moment(raw["created_at"], now)`, `updated_at = _moment(raw["updated_at"], created_at)` → `_plan` against `live_title_keys()`: title key already in the app → skip, record the file's title in `skipped_titles`; else `free_title(title, occupied)` where `occupied` = app keys + keys already planned from this file (a repeat inside the file becomes "T (2)", counted in `renamed`) → `add_many` in one transaction → `ImportResult`. Nothing is written before `add_many`.
 
 ### §5.5 Errors and edge cases
-- Not UTF-8, not JSON, wrong marker, missing/invalid field, count mismatch, > 5 MB → `NotAnExport`; nothing written.
-- Unique-index clash during `add_many` (another device saved meanwhile) → rolled back, `ImportInterrupted` → 409 `import_interrupted`.
-- Export with 0 recipes → valid file, `recipe_count: 0`. Pending-deleted recipes are not exported. Unknown extra keys are ignored.
+- `NotAnExport` (nothing written): not UTF-8, not JSON (incl. `RecursionError` on deep nesting), not an object, wrong marker, `format_version` not an int / < 1, count mismatch, a recipe that is not an object, a wrong field type, a `parse_draft` refusal, a bad date, no `file` part. Body > 5 MB → werkzeug 413 → `not_an_export` (§6.3).
+- **Strict v1 types before `parse_draft`** (`_check_types`; `parse_draft` is lenient for form input and would coerce or drop): `title` str; `servings` int (bool and digit strings refused); `favourite` bool if present; `ingredients`, `steps` a list or missing/`null`; each ingredient an object with `amount` str|null, `unit` str, `name` str (a missing key counts as ""); each step a str. Then `parse_draft` applies §1.2 (lengths, blank rows dropped, amounts).
+- **Missing values (A-12):** missing `favourite` → `false`; missing/`null` `created_at` → import time, missing/`null` `updated_at` → the recipe's `created_at`. Dates: ISO 8601 str (`datetime.fromisoformat`); with an offset → converted to UTC, without → taken as UTC; non-str or unparsable → `NotAnExport`.
+- **Rename past 200 chars (A-13):** if `free_title` would make a title longer than `MAX_TITLE` (200), the whole file is refused as `NotAnExport` rather than truncated (only a hand-edited file with a repeated ~197-char title). A title repeated in the file that the app already holds is skipped and listed once per occurrence (minor m-8).
+- `newer_version`: marker right, `format_version` > `CURRENT_FORMAT_VERSION`; checked before any field. Unique-index clash during `add_many` (another device saved meanwhile) → `DuplicateTitle` → rolled back, `ImportInterrupted` → 409 `import_interrupted`.
+- Export with 0 recipes → valid file, `recipe_count: 0`. Pending-deleted recipes are not exported (`list_live`). Unknown extra keys are ignored. Export timestamps are whole seconds, so an export → import round trip keeps dates to the second (the store keeps microseconds).
 
 ## §6 Web server (shared parts + route rules)
 - **Responsibility:** composition root, request guard, error mapping, user-facing texts, routes.
@@ -318,14 +324,12 @@ Decode UTF-8 → `json.loads` → check `format == "home-cookbook-export"` and i
 def create_app(settings: Settings, clock: Clock | None = None) -> Flask
     # builds SqliteRecipeRepository(settings.db_path).init_schema(), keeper, finder, backup;
     # stores Services(keeper, finder, backup) in app.extensions["cookbook"]; guard.register(app), errors.register(app),
-    # register_blueprint(pages.bp), register_blueprint(api.bp); MAX_CONTENT_LENGTH = MAX_UPLOAD_BYTES (5 MB);
-    # app_version from importlib.metadata "home-cookbook" (fallback "0.0.0")
-# web/__init__.py
-@dataclass(frozen=True) class Services: keeper: RecipeKeeper; finder: RecipeFinder; backup: BackupService
+    # register_blueprint(pages.bp), register_blueprint(api.bp) (its record_once also mounts /export, §5.2);
+    # MAX_CONTENT_LENGTH = MAX_UPLOAD_BYTES (5 MB); app_version from importlib.metadata "home-cookbook" (fallback "0.0.0")
+@dataclass(frozen=True) class Services: keeper: RecipeKeeper; finder: RecipeFinder; backup: BackupService  # web/__init__.py
 def services() -> Services                 # reads current_app.extensions["cookbook"]
-# web/pages.py — blueprint "pages" (no prefix); web/api.py — blueprint "api" (url_prefix "/api")
-# app/serve.py
-def lan_ip() -> str; def banner(port: int) -> str
+# web/pages.py — blueprint "pages" (no prefix); web/api.py — blueprint "api" (url_prefix "/api") + /export (§5.2)
+def lan_ip() -> str; def banner(port: int) -> str      # app/serve.py
 def main() -> None                         # from_env → SIGTERM handler → create_app → create_server (bind) → banner → run (§0.6)
 ```
 
@@ -338,10 +342,11 @@ def main() -> None                         # from_env → SIGTERM handler → cr
 | DeletedElsewhere | 410 `deleted_elsewhere` | — |
 | RecipeNotFound | 404 `not_found` | 404 `error.html` "That recipe isn't here any more" + link to list |
 | UndoExpired | 410 `undo_expired` | — |
-| NotAnExport / 413 | 400 `not_an_export` | — |
+| NotAnExport | 400 `not_an_export` (413 body-too-large keeps status 413, same code, below) | — |
 | NewerExportFormat | 400 `newer_version` | — |
 | ImportInterrupted | 409 `import_interrupted` | — |
 | other | 500 `server_error`, logged `unhandled_error kind=…` with traceback | 500 `error.html` |
+
 As built: a `BUILDERS` table (exception class → `Mapped(status, code, message, extra)`) looked up along the exception's MRO; a new kind = new class + one row. Werkzeug `HTTPException`s: 400 → `bad_request`, 404 → `not_found` ("That page isn't here"), 413 → `not_an_export`, other 4xx → `bad_request`, ≥ 500 → as "other". API vs page is chosen by path: `/api/…` gets JSON, everything else `error.html` (heading = message). Malformed JSON body → 400 `bad_request`.
 
 ### §6.4 Messages (`web/messages.py`; single source of truth for every user-facing text: coders and tester follow it over the wireframes)
@@ -354,7 +359,7 @@ As built: a `BUILDERS` table (exception class → `Mapped(status, code, message,
 | newer_version | This file was made by a newer version of Home Cookbook. Update the app to load it; nothing was changed |
 | undo_expired | Too late to undo; '{title}' is gone |
 | import_interrupted | Something changed while importing; nothing was changed, please try again |
-| imported | Imported {n} recipe(s) [· skipped {m} with the same title: {titles}] [· renamed {k} with a repeated title] [. To restore one, delete it first, then import again] · `{titles}` = `ImportResult.skipped_titles` joined with ", " (file spelling, file order, every one listed); the restore sentence appears only when {m} > 0 (D-30). E.g. "Imported 40 recipes · skipped 2 with the same title: Lemon Cake, Shepherd's Pie. To restore one, delete it first, then import again". Titles are plain text (`menu.js` sets `textContent`, never HTML) |
+| imported | Imported {n} recipe(s) [· skipped {m} with the same title: {titles}] [· renamed {k} with a repeated title] [. To restore one, delete it first, then import again] · `{titles}` = `ImportResult.skipped_titles` joined with ", " (file spelling, file order, every one listed); the restore sentence appears only when {m} > 0 (D-30). E.g. "Imported 40 recipes · skipped 2 with the same title: Lemon Cake, Shepherd's Pie. To restore one, delete it first, then import again". Titles are plain text (`menu.js` sets `textContent`, never HTML). Built as `messages.imported(result: ImportResult) -> str` ("recipe" when n = 1) |
 | restored_renamed | '{title}' is back as '{renamed}' because another recipe now has its name |
 | field codes (`FIELD_MESSAGES`, `field_message(code)`; unknown code → `required` text) | required: "Please fill this in" · not_whole: "Use a whole number of 1 or more" · bad_amount: "Enter one amount, e.g. 2 or 2½" · unclear_amount (D-33): "This amount is unclear; write e.g. 1000 for a thousand, or 1,0 for one" · too_long: "This is too long; please shorten it" · range: same text as bad_amount (reserved). Apply to per-row keys and list-level `ingredients`/`steps` keys alike (§1.2) |
 | constants | OUTSIDE_HOME "Home Cookbook only answers inside the home" · OTHER_WEBSITE "Home Cookbook only accepts requests made from its own pages" · RECIPE_GONE "That recipe isn't here any more" · PAGE_GONE "That page isn't here" · SERVER_ERROR "Something went wrong on the home computer. Please try again" · BAD_REQUEST "That request could not be read" · DISCARD_CHANGES "Discard changes?" |
@@ -365,8 +370,7 @@ As built: a `BUILDERS` table (exception class → `Mapped(status, code, message,
 1. **Address:** `ipaddress.ip_address(request.remote_addr)` (IPv4-mapped IPv6 such as `::ffff:192.168.1.5` is unwrapped first) not private, loopback or link-local, or unparsable/missing → 403 `OUTSIDE_HOME` "Home Cookbook only answers inside the home".
 2. **Host allow-list (D-32, stops DNS rebinding):** the hostname of `request.host` (port dropped, via `urlsplit`) must be an IP literal (IPv4, or bracketed IPv6 like `[fe80::1]:8765`), `localhost`, or a `*.local` name (not bare `.local`); anything else (e.g. `desktop.lan`, `evil.example`, a malformed `[` Host) → 403 with the **same** `OUTSIDE_HOME` message.
 3. POST/PUT/PATCH/DELETE with an `Origin` header whose `netloc` ≠ `request.host` → 403 `OTHER_WEBSITE` (stops other websites posting to the app).
-Refusals are `text/plain` 403 on every path, `/api` included (known minor m-11).
-Logging: stdlib `logging`, `key=value`, recipe ids not titles.
+Refusals are `text/plain` 403 on every path, `/api` included (known minor m-11; import shows the network text, m-4r). Logging: stdlib `logging`, `key=value`, recipe ids not titles.
 
 ## §7 Screens (templates + JS)
 - **Responsibility:** the three screens, mobile-first (390 px, no sideways scroll) with a desktop layout.
@@ -377,7 +381,7 @@ Logging: stdlib `logging`, `key=value`, recipe ids not titles.
 - `base.html`: viewport meta, `app.css`, `<body data-texts=…>` (§6.4), header with `{% block header_actions %}` and a `<details>` menu (`menu`, `menu-button`; `export-link` to `/export`; `import-input` hidden file input with label), `menu-message` status div, `<main class="page">`, `<div data-testid="undo-bar" hidden>`, loads `api.js`, `undo.js`, `menu.js` as `type="module"`, then `{% block scripts %}`. `error.html`: `heading`, `message`, `status`; `data-testid="error-page"` + "Back to recipes".
 - `api.js`: `export async function api(method: string, url: string, body?: object | FormData): Promise<{status: number, data: object}>` (sets JSON headers; never throws; network failure → `{status: 0, data: {error: "network", message: uiText("network")}}`); `export function uiText(key, values?)` (§6.4).
 - `undo.js`: `export function startUndo(id, title, seconds)`; stores `{id, title, until}` under `sessionStorage["cookbook.undo"]`; on every page load re-shows the bar until expiry (G-11); Undo → `POST /api/recipes/<id>/restore`, stores the outcome text under `cookbook.undo-notice`, reloads; the notice shows for 6 s. All texts via `uiText`.
-- `menu.js`: import → `POST /api/import`, shows `message` in `data-testid="menu-message"`, reloads list on success. Built (M1): empty module stub.
+- `menu.js` (built M2): on `import-input` change → `FormData` field `file` → `api("POST", "/api/import", form)`; clears the input and closes the `<details>` menu. 200 → stores `data.message` under `sessionStorage["cookbook.import-notice"]` and reloads, so the list refreshes and the message survives the reload (A-14); on load a stored notice is removed and shown in `menu-message` (`textContent`, no timeout). Error → shows `data.message`, else `uiText("network")`, without reload. A guard 403 (text/plain, §6.5) therefore shows the network text (STATE minor m-4r).
 - All interactive elements carry `data-testid`: `recipe-row`, `star`, `search-input`, `search-by-name`, `search-by-ingredient`, `clear-search`, `add-recipe`, `undo-button`, `servings-input`, `scaled-note`, `reset-scale`, `ingredient-line`, `step`, `edit`, `delete`, `save`, `cancel`, `title-error`, `conflict-dialog`, `reload-theirs`, `keep-mine`, `deleted-dialog`, `save-as-new`, `discard`, `import-input`, `menu-message`. Added as built: `menu`, `menu-button`, `export-link`, `error-page`, `recipe-list`, `empty-state`, `add-recipe-empty`, `no-matches`, `back`, `recipe-title`, `servings`, `ingredient-list`, `step-list`, `recipe-form`, `title-input`, `servings-field`, `ingredient-rows`, `step-rows`, `ingredient-row`, `step-row`, `add-ingredient`, `add-step`, `ingredient-up/-down/-remove`, `step-up/-down/-remove`, `field-error`, `ingredients-error`, `steps-error`.
 
 ### §7.2 Recipe list (`list.html`, `_list_items.html`, `list.js`)
@@ -410,16 +414,17 @@ export function unitFor(unit, result)                               // "cups"↔
 - SPEC §5 checks: ¾ cup 8→4 = ⅜ → ⅓; 3 eggs 4→6 → 4½; ⅓ cup 4→6 → ½; 2 cups 8→4 → "1 cup"; 253 g 3→1 → "84 g"; 150 ml 3→1 → "50 ml"; 2 tbsp 3→1 → "⅔ tbsp".
 
 ## Changes since last milestone
-| Milestone | Section | Change | Why | Ref |
-|---|---|---|---|---|
-| M1 | §6.5, §0.6 | Host allow-list: IP literal (incl. bracketed IPv6), `localhost`, `*.local`, else 403 `OUTSIDE_HOME`; IPv4-mapped remote addresses unwrapped; PATCH counts as a write | Stops DNS rebinding (review M-1) | D-32, T-01 |
-| M1 | §1.1, §1.2, §1.4, §6.4 | `1,000`-style amounts refused as `unclear_amount` (`UnclearAmountError` in `amounts.py`) | No silent 1,000 → 1; refines D-22 | D-33, T-01 |
-| M1 | §1.2, §6.4, §7.4 | List-level `ingredients`/`steps` error keys (not a list → `required`, > 100 → `too_long`); `ingredients.<i>.unit` key; `<i>` indexes the array as sent | Every refusal has a place on the form | T-01, T-02 |
-| M1 | §6.4, §7.1 | `UI_TEXTS` + `uiText()` via `<body data-texts>`; `discard_changes`, `network`, `undo*` browser texts; message constants listed | One source for texts, JS holds none | D-34, T-01/T-02 |
-| M1 | §0.5, §0.6, §6.1 | Start-up: SIGTERM handler first, bind before banner, one-line exit-2 for bad env / port in use / unwritable DB; `init_schema` → `OSError` | Review m-7; start-up race fix | D-34 (T-01); race fix (T-02) |
-| M1 | §6.3 | `BUILDERS` table by MRO; HTTPException mapping (400/404/413/other); `/api/` path picks JSON vs page | As built | T-01 |
-| M1 | §3.2, §6.1 | `web/api.py` blueprint `api` (`/api`) with `POST /api/recipes`; non-object body → 400 `bad_request` | As built | T-01, T-02 |
-| M1 | §7.3, §7.4 | `form_json` is a dict (`pages.form_data`) in a JSON `<script>`; `IngredientLine` via `ingredient_line()`; edit-form `data-key` scheme | As built | T-02 |
-| M1 | §2.1, §2.3, §2.5 | AUTOINCREMENT ids, favourite CHECK, UNIQUE-code check before `DuplicateTitle`, per-migration transaction | As built | T-01 |
-| M1 | §7.1 | Added data-testids, undo `sessionStorage` keys, network result in `api.js`; `menu.js` stub | As built | T-01, T-02 |
-| M1 | §5.1 | `ImportResult.skipped_titles` verified as designed; no change | Verify only | D-30 |
+M2 (Backup format locked; T-03 c4dd6b9, T-04 51f2768). M1 rows are in git history (`8cf1ef8`).
+
+| Section | What changed | Why / task |
+|---|---|---|
+| §5.2, §6.1 | `GET /export` lives in `web/api.py`, mounted by `bp.record_once` outside the `/api` prefix; `factory.py` untouched | Keep the shared factory frozen (A-10, T-03) |
+| §5.1, §5.3 | Export filename uses the home computer's local date; timestamps in the file are UTC `…Z`, whole seconds | A-11, T-03 |
+| §5.1 | `FORMAT_MARKER` constant; `upgrade` owns the marker/version checks (bool and < 1 refused as `not_an_export`) | As built, T-03/T-04 |
+| §5.2, §6.3 | `POST /api/import` response adds `skipped_titles[]`; no `file` part → 400 `not_an_export`; > 5 MB keeps status 413 with code `not_an_export` (old §6.3 row said 400) | As built / doc fix, T-04 |
+| §5.4, §5.5 | Strict per-field v1 type check (`_check_types`) before `parse_draft`, so wrong types are refused, not coerced | Lenient form parsing must not rewrite backups, T-04 |
+| §5.4, §5.5 | UTF-8 BOM accepted (`utf-8-sig`); deep nesting → `not_an_export`; dates with offsets converted to UTC, naive taken as UTC | Robust reading of hand-saved files, T-04 |
+| §5.5 | Missing `favourite` → false; missing `created_at` → import time; missing `updated_at` → `created_at` | A-12, T-04 |
+| §5.5 | A rename that would pass 200 chars refuses the whole file (not truncated) | A-13, T-04 |
+| §6.4 | `imported` text built by `messages.imported(result)` | As built, T-04 |
+| §7.1 | `menu.js` built: result message via `sessionStorage["cookbook.import-notice"]` + reload; errors shown in place | A-14, T-04 |
