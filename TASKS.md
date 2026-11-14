@@ -72,15 +72,15 @@ Test files listed under `Files:` are written by the tester. Paths are relative t
 - Depends on: T-03
 - Files: src/cookbook/services/backup/service.py, src/cookbook/services/backup/formats.py, src/cookbook/web/api.py, src/cookbook/static/js/menu.js, tests/fixtures/exports/v1-*.json, tests/unit/test_backup_import.py, tests/integration/test_import.py, tests/e2e/test_backup_round_trip.py
 - Context: SPEC US-08, US-09, F-6 · scenarios S-05 · LLD §5, §6.3, §6.4, §7.1 · files: src/cookbook/domain/*, src/cookbook/services/backup/*, src/cookbook/web/api.py, src/cookbook/templates/base.html, src/cookbook/static/js/api.js, src/cookbook/static/js/menu.js
-- Status: Backlog
+- Status: Done
 - Acceptance criteria:
-  - [ ] Export 42 recipes, import the file into an empty app: the menu shows "Imported 42 recipes", the list shows all 42 (favourites on top), and exporting again gives every recipe with every field identical (only `exported_at` differs)
-  - [ ] The same file imported into an app already holding "Lemon Cake" and "shepherd's pie" shows "Imported 40 recipes · skipped 2 with the same title" and leaves those two unchanged
-  - [ ] That import result names each skipped recipe ("Lemon Cake", "Shepherd's Pie") and says "To restore one, delete it first, then import again"; deleting "Lemon Cake" (after its Undo window) and importing the same file again brings back the file's "Lemon Cake" with every field as exported and skips only "Shepherd's Pie" (S-05, D-30)
-  - [ ] A file holding two recipes titled "Pancakes" imports both, the second as "Pancakes (2)", and the message says "renamed 1 with a repeated title" (S-07)
-  - [ ] `holiday.jpg`, an export with a missing bracket halfway through, and one whose `recipe_count` is wrong each show "This file isn't a Home Cookbook export; nothing was changed" with the recipe count unchanged; a file with `format_version` 2 shows "This file was made by a newer version of Home Cookbook. Update the app to load it; nothing was changed" (S-11)
-  - [ ] A frozen fixture `tests/fixtures/exports/v1-*.json` (favourites, a no-amount ingredient, accents, fraction and decimal amounts) imports with every field checked, and one test imports every file in `tests/fixtures/exports/` so later versions keep loading it (S-06)
-- Result:
+  - [x] Export 42 recipes, import the file into an empty app: the menu shows "Imported 42 recipes", the list shows all 42 (favourites on top), and exporting again gives every recipe with every field identical (only `exported_at` differs)
+  - [x] The same file imported into an app already holding "Lemon Cake" and "shepherd's pie" shows "Imported 40 recipes · skipped 2 with the same title" and leaves those two unchanged
+  - [x] That import result names each skipped recipe ("Lemon Cake", "Shepherd's Pie") and says "To restore one, delete it first, then import again"; deleting "Lemon Cake" (after its Undo window) and importing the same file again brings back the file's "Lemon Cake" with every field as exported and skips only "Shepherd's Pie" (S-05, D-30)
+  - [x] A file holding two recipes titled "Pancakes" imports both, the second as "Pancakes (2)", and the message says "renamed 1 with a repeated title" (S-07)
+  - [x] `holiday.jpg`, an export with a missing bracket halfway through, and one whose `recipe_count` is wrong each show "This file isn't a Home Cookbook export; nothing was changed" with the recipe count unchanged; a file with `format_version` 2 shows "This file was made by a newer version of Home Cookbook. Update the app to load it; nothing was changed" (S-11)
+  - [x] A frozen fixture `tests/fixtures/exports/v1-*.json` (favourites, a no-amount ingredient, accents, fraction and decimal amounts) imports with every field checked, and one test imports every file in `tests/fixtures/exports/` so later versions keep loading it (S-06)
+- Result: approved 2026-11-14 · 51f2768 · 6/6 goals · 222 tests, coverage 91.7% · 1 debug round (M-1 strict file types) · review 0 major/3 minor
 
 ## M3 · Ready at home (before deploy)
 

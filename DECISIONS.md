@@ -54,3 +54,6 @@
 | A-09 | 2026-11-13 | Leave-page prompt | Browser built-in confirm (LLD §7.4); wireframe custom dialog superseded; LLD §6.4 is the sole source of UI text | architect | plan |
 | A-10 | 2026-11-14 | Where /export is mounted | From web/api.py via bp.record_once, outside /api; factory.py untouched | backend-coder | T-03 |
 | A-11 | 2026-11-14 | Export dates | File name uses the home computer's local date; timestamps inside are UTC "…Z" | backend-coder | T-03 |
+| A-12 | 2026-11-14 | Import: missing `favourite` / dates | favourite defaults false; missing dates default to the import time | backend-coder | T-04 |
+| A-13 | 2026-11-14 | Import: rename past 200 chars | Refuse the whole file (nothing written) rather than truncate | debugger | T-04 |
+| A-14 | 2026-11-14 | Import result display | menu.js stores the message in sessionStorage and reloads, so the list refreshes and the message stays | frontend-coder | T-04 |

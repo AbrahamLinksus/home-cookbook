@@ -12,7 +12,7 @@
 | Owner mode | builder: plain words, technical detail collapsed |
 | Size | medium · signals: backend, database, deployment (home Wi-Fi) · 9 stories · full track |
 | Milestone | M2 · Backup format locked (M1 done: 393b7c7) |
-| Next step | M2: T-04 Load an export file back in · backend-coder → frontend-coder (T-03 done: c4dd6b9) |
+| Next step | M2-docs: architect as-built LLD sync (since M1), then docs README pass; then the M2 milestone card (T-03 c4dd6b9, T-04 51f2768) |
 | Started | 2026-11-13 07:50 +05:30 (cost.py --since) · Budget 0 (no cap) |
 | Last updated | 2026-11-14 |
 
@@ -72,13 +72,18 @@
 | T-03 | tests/unit/test_backup_export.py | Undo-window test only proves list_live is called; assert the pending recipe is absent from the file (m2) | S |
 | T-03 | tests (export filename) | Filename test repeats the implementation's date expression; use a fixed Clock with a known local date (m3) | S |
 | T-03 | tests/integration/test_export.py | Tests check several behaviours each; one name claims "order" but doesn't check it (m4) | S |
+| T-04 | web/guard.py or web/messages.py, static/js/menu.js | A guard 403 on import shows "Could not reach the home computer"; return JSON for /api/ 403s (ties to T-01 m-11) or add UI_TEXTS["import_failed"] (m-4r) | S |
+| T-04 | tests (backup import) | Split multi-behaviour tests, tighten names, tag e2e with S-xx (m-7) | S |
+| T-04 | services/backup/service.py | A title repeated in the file that the app already holds is listed twice under "skipped" (m-8; follows LLD invariant) | S |
+| T-04 | tests/unit/test_backup_import.py | Every-fixture test only picks up files named v*-*.json (nit) | S |
 
 ## Context additions
 | Role | Also read | Why (from gap report) |
 |---|---|---|
 | reviewer | src/cookbook/web/messages.py, static/js/api.js, app/factory.py | UI-text and security questions need them (T-02 gap) |
-| reviewer | src/cookbook/templates/base.html, src/cookbook/services/ports.py, src/cookbook/adapters/sqlite_repo.py | Verifying links and repository behaviour needs them (T-03 gap) |
+| reviewer | src/cookbook/templates/base.html, src/cookbook/domain/rules.py, src/cookbook/adapters/sqlite_repo.py | Verifying links and repository behaviour needs them (T-03 gap) |
 | debugger | tests/e2e/conftest.py | UI fixes need the e2e fixtures (T-02 gap) |
+| debugger | src/cookbook/static/js/api.js, src/cookbook/web/errors.py | UI-text and error-mapping fixes need them (T-04 gap) |
 | planner, tester | docs/scenarios.md | Acceptance criteria link usage scenarios S-xx (planner gap report, stage 6) |
 
 ## Notes for the next session
@@ -88,4 +93,5 @@
 - Shared files (STATE/DECISIONS) on wip/plan: edit them only after a step's `done`, then `taskgit checkpoint` before the next agent starts — a step's scope check reverts them otherwise.
 - planner can't write docs/*.mmd; the Orchestrator copies .results/hld/hld.mmd → docs/hld-dataflow.mmd and renders it.
 - capture.py `term` images can't draw accented letters (font); use `md` rendering for text with accents.
+- Briefs that pass a fixed commit message to git-pr must include the `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>` line (c4dd6b9 has a Haiku trailer, 51f2768 none; left as is, no history rewrite).
 - Run capture.py with ~/.cache/dev-team-setup/venv/bin/python (it has playwright + PIL); the project venv and system python lack one or the other.
