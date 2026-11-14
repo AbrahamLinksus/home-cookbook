@@ -7,8 +7,9 @@ from flask import Blueprint, Response, abort, jsonify, request
 from flask.blueprints import BlueprintSetupState
 from flask.typing import ResponseReturnValue
 
+from cookbook.domain.errors import NotAnExport
 from cookbook.domain.rules import parse_draft
-from cookbook.web import services
+from cookbook.web import messages, services
 
 bp = Blueprint("api", __name__, url_prefix="/api")
 
@@ -26,6 +27,23 @@ def _recipe_in() -> Mapping[str, object]:
 def create_recipe() -> ResponseReturnValue:
     recipe = services().keeper.create(parse_draft(_recipe_in()))
     return jsonify({"id": recipe.id, "version": recipe.version}), 201
+
+
+@bp.post("/import")
+def import_recipes() -> ResponseReturnValue:
+    upload = request.files.get("file")
+    if upload is None:
+        raise NotAnExport("no file in the request")
+    result = services().backup.import_file(upload.read())
+    return jsonify(
+        {
+            "imported": result.imported,
+            "skipped": result.skipped,
+            "renamed": result.renamed,
+            "skipped_titles": list(result.skipped_titles),
+            "message": messages.imported(result),
+        }
+    )
 
 
 def export_download() -> Response:
