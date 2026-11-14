@@ -11,8 +11,8 @@
 | Stage | 7 Build |
 | Owner mode | builder: plain words, technical detail collapsed |
 | Size | medium · signals: backend, database, deployment (home Wi-Fi) · 9 stories · full track |
-| Milestone | M2 · Backup format locked (M1 done: 393b7c7) |
-| Next step | M2-docs: architect as-built LLD sync (since M1), then docs README pass; then the M2 milestone card (T-03 c4dd6b9, T-04 51f2768) |
+| Milestone | M3 · Ready at home (M1 done: 393b7c7 · M2 done: d4421d2) |
+| Next step | M3: T-05 Delete a recipe with a 10-second Undo · backend-coder → frontend-coder. Start with `/setup-project resume home-cookbook` in a fresh chat |
 | Started | 2026-11-13 07:50 +05:30 (cost.py --since) · Budget 0 (no cap) |
 | Last updated | 2026-11-14 |
 
@@ -76,6 +76,7 @@
 | T-04 | tests (backup import) | Split multi-behaviour tests, tighten names, tag e2e with S-xx (m-7) | S |
 | T-04 | services/backup/service.py | A title repeated in the file that the app already holds is listed twice under "skipped" (m-8; follows LLD invariant) | S |
 | T-04 | tests/unit/test_backup_import.py | Every-fixture test only picks up files named v*-*.json (nit) | S |
+| T-04 | services/backup/formats.py, web/messages.py | A file needing a rename past 200 chars is refused as "not an export"; give it a clearer message (D-37) | S |
 
 ## Context additions
 | Role | Also read | Why (from gap report) |
@@ -87,11 +88,14 @@
 | planner, tester | docs/scenarios.md | Acceptance criteria link usage scenarios S-xx (planner gap report, stage 6) |
 
 ## Notes for the next session
-- LLD is 425 lines (400-line guide) because of the M1 change table; architect may trim at the M2 sync.
+- LLD is 422 lines after the M2 sync (400-line guide); trimming further would cut real content.
 - taskgit approve prints "approved: <hash>" then exits 1 from a `pwd` error after the worktree is removed; the merge and push succeed — verify with git log / ls-remote.
 - Repo is local-only. To move to GitHub later: `git remote set-url origin <url> && git push -u origin --all`.
 - Shared files (STATE/DECISIONS) on wip/plan: edit them only after a step's `done`, then `taskgit checkpoint` before the next agent starts — a step's scope check reverts them otherwise.
 - planner can't write docs/*.mmd; the Orchestrator copies .results/hld/hld.mmd → docs/hld-dataflow.mmd and renders it.
 - capture.py `term` images can't draw accented letters (font); use `md` rendering for text with accents.
 - Briefs that pass a fixed commit message to git-pr must include the `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>` line (c4dd6b9 has a Haiku trailer, 51f2768 none; left as is, no history rewrite).
+- git-pr runs on Haiku and applies its own Co-Authored-By trailer even when the brief gives Opus (c4dd6b9 and d4421d2 say Haiku, 51f2768 none). Not rewritten.
+- Checkpoint after EVERY step before spawning the next agent: `scope` reverts uncommitted files outside the new agent's scope (the first M2 README pass was lost this way).
+- Docs agents have no shell: the Orchestrator renders README/LLD images with capture.py `md`.
 - Run capture.py with ~/.cache/dev-team-setup/venv/bin/python (it has playwright + PIL); the project venv and system python lack one or the other.

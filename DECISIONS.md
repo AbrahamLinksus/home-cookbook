@@ -39,6 +39,9 @@
 | D-34 | 2026-11-13 | Review minors in shared code | Fix m-1, m-2, m-3, m-7, m-9 in T-01 | One extra fix round | Fix 4 · log all | T-01 |
 | D-35 | 2026-11-13 | Settings via .env | Reword .env.example: settings are environment variables in front of the command; no .env loading | No new package · if wrong: add python-dotenv (~15 min) | Add python-dotenv | M1-docs |
 | D-36 | 2026-11-13 | Milestone M1 | Approved: as-built LLD + README; continue M2 in a fresh session | — | Continue here · request changes | M1-docs |
+| D-37 | 2026-11-14 | Import: rename past 200 chars vs SPEC F-6 | Accept as built: refuse the whole file (A-13); log a follow-up for a clearer message than "not an export" | Only hand-edited files hit it · if wrong: shorten instead (~1 small task) | Shorten the title · clearer message only | M2-docs |
+| D-38 | 2026-11-14 | Export timestamp precision (format v1 locked) | Whole seconds; "every field identical" holds to the second (LLD §5.5) | No format change · full precision later needs format v2 | Full precision now | M2-docs |
+| D-39 | 2026-11-14 | Milestone M2 | Approved: as-built LLD + README; continue M3 in a fresh session | — | Continue here · request changes | M2-docs |
 
 ## Tier 2 — decided by agents (overrule any time)
 | ID | Date | Decision | Chosen | Agent | Task |
