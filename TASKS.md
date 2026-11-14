@@ -59,13 +59,13 @@ Test files listed under `Files:` are written by the tester. Paths are relative t
 - Files: src/cookbook/services/backup/service.py, src/cookbook/services/backup/formats.py, src/cookbook/web/api.py, tests/unit/test_backup_export.py, tests/integration/test_export.py
 - Context: SPEC US-08 · LLD §5.1, §5.2, §5.3, §5.5, §6.3 · files: src/cookbook/domain/*, src/cookbook/services/backup/*, src/cookbook/web/api.py, src/cookbook/templates/base.html
 - Notes: the "Export all recipes" link already exists in `base.html` (T-01); this task makes `GET /export` answer it.
-- Status: Backlog
+- Status: Done
 - Acceptance criteria:
-  - [ ] With 42 recipes, tapping "Export all recipes" downloads one file `cookbook-<home computer's date>.json` holding all 42 with title, servings, favourite, ingredients in order (amount as typed, `null` when none), steps in order, created_at and updated_at
-  - [ ] The file matches LLD §5.3: `"format": "home-cookbook-export"`, `"format_version": 1`, `app_version`, `exported_at`, `recipe_count` equal to the number of recipes; UTF-8, indented 2, with "Crème Brûlée" and "200°C" readable as typed when opened in a text viewer (S-12)
-  - [ ] An empty app exports a valid file with `"recipe_count": 0` and an empty recipe list (S-10)
-  - [ ] A recipe waiting out its undo window is not exported (unit test with the in-memory repository fake and a fixed Clock)
-- Result:
+  - [x] With 42 recipes, tapping "Export all recipes" downloads one file `cookbook-<home computer's date>.json` holding all 42 with title, servings, favourite, ingredients in order (amount as typed, `null` when none), steps in order, created_at and updated_at
+  - [x] The file matches LLD §5.3: `"format": "home-cookbook-export"`, `"format_version": 1`, `app_version`, `exported_at`, `recipe_count` equal to the number of recipes; UTF-8, indented 2, with "Crème Brûlée" and "200°C" readable as typed when opened in a text viewer (S-12)
+  - [x] An empty app exports a valid file with `"recipe_count": 0` and an empty recipe list (S-10)
+  - [x] A recipe waiting out its undo window is not exported (unit test with the in-memory repository fake and a fixed Clock)
+- Result: approved 2026-11-14 · c4dd6b9 · 4/4 goals · 171 tests, coverage 88.6% · review 0 critical/0 major/4 minor
 
 ### T-04 · Load an export file back in (any version, all or nothing)
 - Owner: backend-coder → frontend-coder

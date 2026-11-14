@@ -52,3 +52,5 @@
 | A-07 | 2026-11-13 | Amount display before scaling | Shown unrounded until servings change | architect | plan |
 | A-08 | 2026-11-13 | Save-as-new form | Stays in new-recipe mode | architect | plan |
 | A-09 | 2026-11-13 | Leave-page prompt | Browser built-in confirm (LLD §7.4); wireframe custom dialog superseded; LLD §6.4 is the sole source of UI text | architect | plan |
+| A-10 | 2026-11-14 | Where /export is mounted | From web/api.py via bp.record_once, outside /api; factory.py untouched | backend-coder | T-03 |
+| A-11 | 2026-11-14 | Export dates | File name uses the home computer's local date; timestamps inside are UTC "…Z" | backend-coder | T-03 |

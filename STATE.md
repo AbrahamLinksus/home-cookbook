@@ -12,9 +12,9 @@
 | Owner mode | builder: plain words, technical detail collapsed |
 | Size | medium · signals: backend, database, deployment (home Wi-Fi) · 9 stories · full track |
 | Milestone | M2 · Backup format locked (M1 done: 393b7c7) |
-| Next step | M2: T-03 Export all recipes to one file · backend-coder (then T-04 import). Start with `/setup-project resume home-cookbook` in a fresh chat |
+| Next step | M2: T-04 Load an export file back in · backend-coder → frontend-coder (T-03 done: c4dd6b9) |
 | Started | 2026-11-13 07:50 +05:30 (cost.py --since) · Budget 0 (no cap) |
-| Last updated | 2026-11-13 |
+| Last updated | 2026-11-14 |
 
 ## Config
 | Field | Value |
@@ -68,11 +68,16 @@
 | T-02 | tests (pages) | test_form_data_blank_and_filled covers only the blank form (m-8) | S |
 | T-02 | static/js/edit.js:103-107 | Several unknown 422 keys stack notes under the title (n-9) | S |
 | T-02 | tests/integration/test_serve.py | readline without timeout; add a direct regression test for the start-up race; "stopped" logged when stopped before serving (race-fix review) | S |
+| T-03 | tests/unit/test_backup_export.py | Partial in-memory repo fake with type: ignore; make it honour the full Protocol (m1) | S |
+| T-03 | tests/unit/test_backup_export.py | Undo-window test only proves list_live is called; assert the pending recipe is absent from the file (m2) | S |
+| T-03 | tests (export filename) | Filename test repeats the implementation's date expression; use a fixed Clock with a known local date (m3) | S |
+| T-03 | tests/integration/test_export.py | Tests check several behaviours each; one name claims "order" but doesn't check it (m4) | S |
 
 ## Context additions
 | Role | Also read | Why (from gap report) |
 |---|---|---|
 | reviewer | src/cookbook/web/messages.py, static/js/api.js, app/factory.py | UI-text and security questions need them (T-02 gap) |
+| reviewer | src/cookbook/templates/base.html, src/cookbook/services/ports.py, src/cookbook/adapters/sqlite_repo.py | Verifying links and repository behaviour needs them (T-03 gap) |
 | debugger | tests/e2e/conftest.py | UI fixes need the e2e fixtures (T-02 gap) |
 | planner, tester | docs/scenarios.md | Acceptance criteria link usage scenarios S-xx (planner gap report, stage 6) |
 
@@ -82,4 +87,5 @@
 - Repo is local-only. To move to GitHub later: `git remote set-url origin <url> && git push -u origin --all`.
 - Shared files (STATE/DECISIONS) on wip/plan: edit them only after a step's `done`, then `taskgit checkpoint` before the next agent starts — a step's scope check reverts them otherwise.
 - planner can't write docs/*.mmd; the Orchestrator copies .results/hld/hld.mmd → docs/hld-dataflow.mmd and renders it.
+- capture.py `term` images can't draw accented letters (font); use `md` rendering for text with accents.
 - Run capture.py with ~/.cache/dev-team-setup/venv/bin/python (it has playwright + PIL); the project venv and system python lack one or the other.
