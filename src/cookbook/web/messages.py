@@ -25,7 +25,7 @@ DISCARD_CHANGES: Final = "Discard changes?"
 RESTORED_RENAMED: Final = "'{title}' is back as '{renamed}' because another recipe now has its name"
 UNDO_EXPIRED: Final = "Too late to undo; '{title}' is gone"
 
-# Texts the browser shows (undo.js, api.js, edit.js, list.js);
+# Texts the browser shows (undo.js, api.js, edit.js, list.js, view.js);
 # base.html renders them into <body data-texts>.
 # "{name}" placeholders are filled in by api.js uiText().
 UI_TEXTS: Final = {
@@ -38,6 +38,10 @@ UI_TEXTS: Final = {
     "network": "Could not reach the home computer. Please try again",
     "discard_changes": DISCARD_CHANGES,
     "search_failed": "Could not search. Please try again",
+    "scaled_from": "Scaled from {n} servings",
+    "scaled_from_one": "Scaled from {n} serving",
+    "scaled_to": "Amounts now for {n} servings",
+    "scaled_to_one": "Amounts now for {n} serving",
 }
 
 FIELD_MESSAGES: Final = {

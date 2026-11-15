@@ -11,8 +11,21 @@
   <span aria-hidden="true" style="font-size:24px">{{ "★" if recipe.favourite else "☆" }}</span>
 </div>
 <div class="box">
-  <strong>Servings</strong>
-  <span data-testid="servings">{{ recipe.servings }}</span>
+  <div class="box-bar">
+    <strong>Servings</strong>
+    <span class="visually-hidden" aria-hidden="true"><span data-testid="servings">{{ recipe.servings }}</span></span>
+    <span class="stepper">
+      <button class="btn" type="button" data-testid="servings-down" aria-label="Fewer servings">&minus;</button>
+      <input type="text" inputmode="numeric" data-testid="servings-input" aria-label="Servings"
+             value="{{ recipe.servings }}" data-saved="{{ recipe.servings }}">
+      <button class="btn" type="button" data-testid="servings-up" aria-label="More servings">+</button>
+    </span>
+  </div>
+  <div class="scaled-note" data-testid="scaled-note" hidden>
+    <span data-testid="scaled-text"></span> ·
+    <button class="btn" type="button" data-testid="reset-scale">Reset</button>
+  </div>
+  <p class="visually-hidden" role="status" aria-live="polite" data-testid="scale-status"></p>
 </div>
 <div class="view-cols">
   <section class="box">
@@ -21,7 +34,7 @@
       {% for line in lines %}
       <li data-testid="ingredient-line" data-num="{{ line.qty_num if line.qty_num is not none else '' }}"
           data-den="{{ line.qty_den if line.qty_den is not none else '' }}"
-          data-unit="{{ line.unit }}" data-text="{{ line.amount_text or '' }}">{{ [line.amount_text, line.unit, line.name] | select | join(" ") }}</li>
+          data-unit="{{ line.unit }}" data-name="{{ line.name }}" data-text="{{ line.amount_text or '' }}">{{ [line.amount_text, line.unit, line.name] | select | join(" ") }}</li>
       {% endfor %}
     </ul>
   </section>
