@@ -63,3 +63,7 @@
 | A-15 | 2026-11-15 | Undo window length source | RecipeKeeper exposes undo_seconds; routes read it from there | backend-coder | T-05 |
 | A-16 | 2026-11-15 | Title for "back as 'X (2)'" message | Derived in the api.py route by cutting the " (n)" suffix; restore() signature kept as in LLD | backend-coder, debugger | T-05 |
 | A-17 | 2026-11-15 | undo.js edited by a feature task | Internal fix for the too-late text; startUndo export unchanged; LLD §0.7 note due at M3 as-built sync | debugger | T-05 |
+| A-18 | 2026-11-15 | Empty-state count while searching | pages.py passes total_live = live recipe count so "No recipes yet" vs "No recipes match" stays right | backend-coder | T-07 |
+| A-19 | 2026-11-15 | Search without JavaScript | Search form is GET / ?q=&by=; list.js intercepts it, debounces 150 ms, aborts stale requests, keeps the URL in step (replaceState) | frontend-coder | T-07 |
+| A-20 | 2026-11-15 | Search failure text | UI_TEXTS["search_failed"] = "Could not search. Please try again" (LLD §6.4 entry due at M3 sync) | backend-coder | T-07 |
+| A-21 | 2026-11-15 | Browser test file name | tests/e2e/test_search_browser.py (basename clash with tests/integration/test_search.py) | tester | T-07 |

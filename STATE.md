@@ -12,7 +12,7 @@
 | Owner mode | builder: plain words, technical detail collapsed |
 | Size | medium · signals: backend, database, deployment (home Wi-Fi) · 9 stories · full track |
 | Milestone | M3 · Ready at home (M1 done: 393b7c7 · M2 done: d4421d2) |
-| Next step | M3: T-06 Edit from two devices, T-07 Search, T-09 Scale servings (independent; run in parallel) |
+| Next step | M3: T-09 Scale servings in review; then T-06 Edit from two devices (shares files with T-09) |
 | Started | 2026-11-13 07:50 +05:30 (cost.py --since) · Budget 0 (no cap) |
 | Last updated | 2026-11-15 |
 
@@ -79,6 +79,13 @@
 | T-04 | services/backup/formats.py, web/messages.py | A file needing a rename past 200 chars is refused as "not an export"; give it a clearer message (D-37) | S |
 | T-05 | services/backup or web/errors.py | API 410 text for a purged recipe reads "'' is gone" (no screen shows it) (nit) | S |
 | T-05 | docs/LLD.md §0.7 | Note that undo.js was edited internally by T-05 (m-a; do at M3 as-built sync) | S |
+| T-07 | static/js/list.js | Uses raw fetch instead of api.js ("all HTTP through api.js"); add an api.js helper or record the exception at M3 sync (m1) | S |
+| T-07 | web/pages.py:67-69 | Reads every recipe twice per keystroke (total_live + search) (m2) | S |
+| T-07 | static/js/list.js | Query built twice; URL can briefly show a newer query than the list (m3) | S |
+| T-07 | web/pages.py | No length cap on q (m5) | S |
+| T-07 | tests (search) | "Units and amounts not searched" barely tested for amounts (m6) | S |
+| T-07 | templates/_list_items.html | Heading reads "All recipes (A–Z)" while a search is showing (owner-visible; seen on result card) | S |
+| T-07 | docs/LLD.md §6.4 | Add "search_failed" UI text (T-07) at M3 as-built sync | S |
 
 ## Context additions
 | Role | Also read | Why (from gap report) |

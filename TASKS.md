@@ -114,16 +114,16 @@ Test files listed under `Files:` are written by the tester. Paths are relative t
 ### T-07 · Search by name or by ingredient
 - Owner: backend-coder → frontend-coder
 - Depends on: T-02
-- Files: src/cookbook/services/finder.py, src/cookbook/web/pages.py, src/cookbook/templates/list.html, src/cookbook/templates/_list_items.html, src/cookbook/static/js/list.js, tests/unit/test_finder.py, tests/integration/test_search.py, tests/e2e/test_search.py
+- Files: src/cookbook/services/finder.py, src/cookbook/web/pages.py, src/cookbook/templates/list.html, src/cookbook/templates/_list_items.html, src/cookbook/static/js/list.js, tests/unit/test_finder.py, tests/integration/test_search.py, tests/e2e/test_search_browser.py
 - Context: SPEC US-04, US-05 · LLD §1.4, §4, §7.2 · files: src/cookbook/domain/search.py, src/cookbook/services/finder.py, src/cookbook/web/pages.py, src/cookbook/templates/list.html, src/cookbook/templates/_list_items.html, docs/wireframes/recipe-list.html
-- Status: Backlog
+- Status: Done
 - Acceptance criteria:
-  - [ ] By name, typing "pie" lists "Grandma's Apple Pie" and "Shepherd's Pie" and not "Lemon Cake"; the list narrows while typing, without pressing Enter
-  - [ ] By name, "shepherds" finds "Shepherd's Pie", "creme" finds "Crème Brûlée", "APP" finds "Grandma's Apple Pie" (S-08)
-  - [ ] By ingredient, "buttermilk" lists exactly "Buttermilk Pancakes" and "Aunt May's Scones"; "egg" finds recipes with "3 eggs" and with "1 eggplant"; units and amounts are not searched (S-08)
-  - [ ] "soup" with no match shows "No recipes match 'soup'" with "Clear search", which brings back the full list (S-10); recipes waiting out their undo window never appear in results (unit test)
-  - [ ] Results keep favourites first, then A–Z; with 500 recipes a search answer arrives in under 1 second (integration timing)
-- Result:
+  - [x] By name, typing "pie" lists "Grandma's Apple Pie" and "Shepherd's Pie" and not "Lemon Cake"; the list narrows while typing, without pressing Enter
+  - [x] By name, "shepherds" finds "Shepherd's Pie", "creme" finds "Crème Brûlée", "APP" finds "Grandma's Apple Pie" (S-08)
+  - [x] By ingredient, "buttermilk" lists exactly "Buttermilk Pancakes" and "Aunt May's Scones"; "egg" finds recipes with "3 eggs" and with "1 eggplant"; units and amounts are not searched (S-08)
+  - [x] "soup" with no match shows "No recipes match 'soup'" with "Clear search", which brings back the full list (S-10); recipes waiting out their undo window never appear in results (unit test)
+  - [x] Results keep favourites first, then A–Z; with 500 recipes a search answer arrives in under 1 second (integration timing)
+- Result: approved 2026-11-15 · 9ab5e22 · 5/5 goals · 277 tests, coverage 92% · 0 debug rounds · review 0 major/7 minor
 
 ### T-08 · Favourites on top
 - Owner: backend-coder → frontend-coder
