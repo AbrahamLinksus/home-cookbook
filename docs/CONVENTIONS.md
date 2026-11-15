@@ -11,7 +11,7 @@
 - `sqlite3` may be imported only in `src/cookbook/adapters/**` (ruff `TID251` banned-api with a per-file ignore for that folder).
 - Flask: blueprints in `web/pages.py` (HTML) and `web/api.py` (JSON); views stay thin (parse → one service call → render/JSON). Get services with `cookbook.web.services()`.
 - Templates (Jinja2): autoescape on (default); never `|safe` on recipe text; embed data with `|tojson`. Every interactive element has the `data-testid` named in LLD §7.1.
-- JavaScript: plain ES modules (`type="module"`), no build, no Node, no external libraries; `const`/`let`, `async/await`, all HTTP through `static/js/api.js`. Pure logic (scaler) has no DOM access. JSDoc type comments on exported functions.
+- JavaScript: plain ES modules (`type="module"`), no build, no Node, no external libraries; `const`/`let`, `async/await`, all HTTP through `static/js/api.js` (one exception: `list.js` fetches the HTML list fragment `/recipes/_list` with raw `fetch`, because it needs text and an `AbortSignal`, which `api.js` does not offer; LLD §7.2). Pure logic (scaler) has no DOM access. JSDoc type comments on exported functions.
 - CSS: one file `static/css/app.css`, mobile-first (390 px base, no horizontal scroll), one `@media (min-width: 768px)` desktop layer; touch targets ≥ 44 px.
 
 ## 2. Layering (dependencies point inward only)
@@ -28,7 +28,7 @@ templates + static JS  →  HTTP contracts in LLD §3.2, §4.2, §5.2 only
 - Services and adapters never import each other, Flask, Werkzeug or waitress; services use `RecipeRepository` and `Clock` from `domain.ports`.
 - Domain imports nothing from the other layers and does no I/O.
 - Only `cookbook.app.factory.create_app` constructs adapters and services.
-- Front end: page JS (`list.js`, `view.js`, `edit.js`, `menu.js`) → shared modules (`api.js`, `undo.js`, `scaler.js`); shared modules never import page JS.
+- Front end: page JS (`list.js`, `view.js`, `edit.js`, `menu.js`) → shared modules (`api.js`, `undo.js`, `favourite.js`, `scaler.js`); shared modules never import page JS. Browser texts come only from `uiText(key)` (LLD §6.4).
 - Enforced by the import-linter contracts in LLD §0.3.
 
 ## 3. SOLID: what it means in this project
@@ -55,7 +55,8 @@ templates + static JS  →  HTTP contracts in LLD §3.2, §4.2, §5.2 only
 - Tests: Arrange-Act-Assert, one behaviour per test, names `test_<unit>_<condition>_<expected>`.
   - `tests/unit/`: domain rules, formats, services with an in-memory `RecipeRepository` fake and a fixed `Clock`.
   - `tests/integration/`: Flask test client on `create_app(Settings(db_path=tmp_path/...), clock=FakeClock)`; SQLite repository on a temp file.
-  - `tests/e2e/`: pytest-playwright against a live server started in a thread (`werkzeug.serving.make_server("127.0.0.1", 0, app)`) on a temp DB, phone viewport 390×844 plus one desktop run; scaler tested via `page.evaluate("window.cookbookScaler…")`. One e2e test per acceptance criterion tagged `(S-xx)`.
+  - `tests/e2e/`: pytest-playwright against a live server started in a thread (`werkzeug.serving.make_server("127.0.0.1", 0, app)`) on a temp DB, phone viewport 390×844 plus one desktop run; scaler tested via `page.evaluate("window.cookbookScaler…")`. One e2e test per acceptance criterion tagged `(S-xx)`. Shared fixtures live in `tests/e2e/conftest.py` (`live_url`, `seed`, `start_app`); put new shared helpers there, not copies per file.
+  - Definition-of-done e2e (A-33): the `start_app(name)` fixture runs the real app as `timeout -k 5 300 uv run --no-sync cookbook` on a temp `COOKBOOK_DB` and a free `COOKBOOK_PORT`, waits for the banner, drives the printed LAN URL, and always stops it (skips if the machine has no LAN address). This server is a subprocess, so it adds no coverage. Screenshots go to `tmp_path`, or to the folder in `COOKBOOK_TEST_SHOTS` (e.g. `.results/T-10`) when evidence is wanted.
   - `tests/fixtures/exports/v<n>-*.json`: frozen export samples; never edited once added (LLD §5.3).
   - Never patch deep inside code; fake through the two ports.
 

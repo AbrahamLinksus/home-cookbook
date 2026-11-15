@@ -1,7 +1,7 @@
 # Low-level design — Home Cookbook
 
 > Numbered, self-contained sections: brief a task with only the sections it needs (e.g. `LLD §1, §3`). Numbers are stable: update in place, new sections get new numbers, removed ones are marked `(removed)`.
-> Size: medium (cap 400 lines). From SPEC, HLD (D-14), research, DECISIONS D-01..D-36, A-01..A-14. As-built through M2 (T-01..T-04); "Built:" lines say which parts exist yet. Diagram sources: `.results/plan/lld-components.mmd`, `lld-erd.mmd`, `lld-seq-save.mmd`, `lld-seq-delete-undo.mmd`, `lld-seq-import.mmd`.
+> Size: medium (cap 400 lines). From SPEC, HLD (D-14), research, DECISIONS D-01..D-37, A-01..A-33. As-built through M3 (T-01..T-10): every section is built. Diagram sources: `.results/plan/lld-components.mmd`, `lld-erd.mmd`, `lld-seq-save.mmd`, `lld-seq-delete-undo.mmd`, `lld-seq-import.mmd`.
 
 ## §0 Overview
 ### §0.1 Stack
@@ -25,7 +25,7 @@ src/cookbook/
   services/ keeper.py (§3) · finder.py (§4) · backup/service.py, backup/formats.py (§5)
   web/      __init__.py (services()) · guard.py · errors.py · messages.py · pages.py · api.py   (§6)
   templates/ base.html · list.html · _list_items.html · view.html · edit.html · error.html   (§7)
-  static/   css/app.css · js/api.js · js/undo.js · js/list.js · js/view.js · js/edit.js · js/menu.js · js/scaler.js
+  static/   css/app.css · js/api.js · js/undo.js · js/favourite.js · js/scaler.js (shared) · js/list.js · js/view.js · js/edit.js · js/menu.js (page)
 tests/ unit/ · integration/ · e2e/ · fixtures/exports/ · conftest.py
 ```
 Python under `src/cookbook/` (except templates/static) is backend-coder's; `templates/` and `static/` are frontend-coder's (`.devteam/scopes.json`).
@@ -101,7 +101,7 @@ No secrets exist. `Settings.from_env()` (`app/config.py`) reads, all documented 
 - If a firewall (ufw/firewalld) is active, env-setup allows TCP 8765 from the local subnet only. The `.local` name needs avahi on the computer; the IP always works.
 
 ### §0.7 Shared modules (foundation task builds first; feature tasks never edit them)
-`domain/` (all of §1), `adapters/` (§2), `app/` (§0.5, §0.6, §6.1), `web/__init__.py`, `web/guard.py`, `web/errors.py`, `web/messages.py` (§6; feature tasks may add `UI_TEXTS` entries), the `ui_texts` context processor and `form_data` in `web/pages.py`, `templates/base.html`, `templates/error.html`, `static/css/app.css`, `static/js/api.js`, `static/js/undo.js` (§7.1). Feature tasks add routes in `web/pages.py`/`web/api.py` per their section and their own template/JS files.
+`domain/` (all of §1), `adapters/` (§2), `app/` (§0.5, §0.6, §6.1), `web/__init__.py`, `web/guard.py`, `web/errors.py`, `web/messages.py` (§6; feature tasks may add `UI_TEXTS` entries), the `ui_texts` context processor and `form_data` in `web/pages.py`, `templates/base.html`, `templates/error.html`, `static/css/app.css`, `static/js/api.js`, `static/js/undo.js` (§7.1). Feature tasks add routes in `web/pages.py`/`web/api.py` per their section and their own template/JS files. Exceptions as built (M3): T-05 changed `undo.js` internally (too-late text, A-17; `startUndo` unchanged); T-06 added a global `[hidden] { display: none !important; }` to `app.css` so `hidden` beats button/bar display rules (A-28); T-08 added shared `favourite.js` (§7.1).
 
 ## §1 Domain (shared, pure)
 - **Responsibility:** recipe data types, validation and shared rules; no I/O.
@@ -119,7 +119,7 @@ class Recipe: id: int; title: str; servings: int; ingredients: tuple[Ingredient,
               def draft(self) -> RecipeDraft
 class RecipeSummary: id: int; title: str; servings: int; favourite: bool
 class SearchBy(StrEnum): NAME = "name"; INGREDIENT = "ingredient"
-# rules.py — MAX_TITLE = 200 (also caps import renames, §5.5)
+# rules.py — MAX_TITLE = 200 (also caps import renames, §5.5); MAX_SERVINGS = 1000 (mirrored in view.js, §7.3)
 def title_key(title: str) -> str                    # NFC, strip, casefold: the one same-title rule (F-1, F-6)
 def parse_draft(raw: Mapping[str, object]) -> RecipeDraft     # raises InvalidRecipe(fields)
 def list_order(recipes: Iterable[Recipe]) -> list[RecipeSummary]  # favourites first, then title_key A–Z, then id
@@ -201,35 +201,37 @@ Every connection: `PRAGMA journal_mode=WAL; PRAGMA synchronous=FULL; PRAGMA fore
 - **Depends on:** §1 (`RecipeRepository`, `Clock`)
 
 ### §3.1 Interfaces / signatures
-Built (M1): `__init__`, `list_recipes`, `get`, `create` (new recipes start `favourite=False`, `created_at = updated_at = clock.now()`); `UNDO_GRACE_SECONDS = 2`. The rest is planned.
+New recipes start `favourite=False`, `created_at = updated_at = clock.now()`. Constants `UNDO_GRACE_SECONDS = 2`, `RESTORE_ATTEMPTS = 3`.
 ```python
 class RecipeKeeper:
     def __init__(self, repo: RecipeRepository, clock: Clock, undo_seconds: int) -> None
+    @property undo_seconds -> int                       # the DELETE route reads the bar length here (A-15)
     def list_recipes(self) -> list[RecipeSummary]       # purges expired pending deletes first
     def get(self, recipe_id: int) -> Recipe             # RecipeNotFound if missing or pending-deleted
     def create(self, draft: RecipeDraft) -> Recipe      # DuplicateTitle
     def update(self, recipe_id: int, draft: RecipeDraft, base_version: int) -> Recipe
-        # DeletedElsewhere (missing/pending) → ChangedElsewhere(current_version) → DuplicateTitle (other recipe)
-    def set_favourite(self, recipe_id: int, favourite: bool) -> None   # DeletedElsewhere
+        # DeletedElsewhere (missing/pending) → ChangedElsewhere(current_version) → DuplicateTitle (other recipe);
+        # update_if_version → None (lost a race) → _lost_race: re-get → DeletedElsewhere or ChangedElsewhere(new version)
+    def set_favourite(self, recipe_id: int, favourite: bool) -> None   # sets, not flips; DeletedElsewhere if not live
     def delete(self, recipe_id: int) -> Recipe          # RecipeNotFound; earlier pending delete becomes final
     def restore(self, recipe_id: int) -> tuple[Recipe, str | None]
-        # UndoExpired if now > deleted_at + undo_seconds + 2 s or row purged; returns renamed title if its name was taken meanwhile
+        # UndoExpired if now > deleted_at + undo_seconds + 2 s or row purged (purged → title ""); already live → (recipe, None);
+        # _unmark: free_title + unmark_deleted, retried RESTORE_ATTEMPTS times on DuplicateTitle; 2nd item = new title if renamed
 ```
 
 ### §3.2 Contracts (JSON; errors are `{"error": code, "message": str, ...}`, §6.3)
 | Method | Path | Request | Response | Errors |
 |---|---|---|---|---|
 | POST | `/api/recipes` | `{"recipe": RecipeIn}` | 201 `{"id", "version"}` | 422 `invalid` + `fields`; 409 `duplicate_title` + `existing_title` |
-| PUT | `/api/recipes/<id>` | `{"base_version": int, "recipe": RecipeIn}` | 200 `{"id", "version"}` | 409 `changed_elsewhere` + `current_version`; 410 `deleted_elsewhere`; 409 `duplicate_title`; 422 `invalid` |
-| PUT | `/api/recipes/<id>/favourite` | `{"favourite": bool}` | 200 `{"favourite"}` | 410 `deleted_elsewhere` |
-| DELETE | `/api/recipes/<id>` | — | 200 `{"id", "title", "undo_seconds"}` | 404 `not_found` |
+| PUT | `/api/recipes/<id>` | `{"base_version": int, "recipe": RecipeIn}` | 200 `{"id", "version"}` | 409 `changed_elsewhere` + `current_version`; 410 `deleted_elsewhere`; 409 `duplicate_title`; 422 `invalid`; 400 `bad_request` (`base_version` missing / not int / bool) |
+| PUT | `/api/recipes/<id>/favourite` | `{"favourite": bool}` | 200 `{"favourite"}` (idempotent; `version` unchanged, A-30) | 410 `deleted_elsewhere` (missing or pending-deleted); 400 `bad_request` (not a bool) |
+| DELETE | `/api/recipes/<id>` | — | 200 `{"id", "title", "undo_seconds"}` (`keeper.undo_seconds`) | 404 `not_found` |
 | POST | `/api/recipes/<id>/restore` | — | 200 `{"id", "title", "renamed_to": str\|null}` | 410 `undo_expired` |
 
-`RecipeIn` = `{"title": str, "servings": int|str, "ingredients": [{"amount": str, "unit": str, "name": str}], "steps": [str]}`. A body that is not a JSON object holding a `recipe` object → 400 `bad_request` (`web/api.py` `_recipe_in()`); 422 `fields` keys index the arrays as sent (§1.2).
-Built (M1): `POST /api/recipes` (blueprint `api`, `url_prefix="/api"`, in `web/api.py`). Pages: `GET /recipes/new` (built), `GET /recipes/<id>` read view (built, §7.3; 404 page if not live), `GET /recipes/<id>/edit` (planned) — context in §7.4.
+`RecipeIn` = `{"title": str, "servings": int|str, "ingredients": [{"amount": str, "unit": str, "name": str}], "steps": [str]}`. A body that is not a JSON object holding a `recipe` object → 400 `bad_request` (`web/api.py` `_recipe_in()`, `_base_version_in()`); 422 `fields` keys index the arrays as sent (§1.2). Restore `title` is the name at delete time: when renamed, the route cuts the trailing `" (n)"` off `renamed_to` (A-16; `free_title` only appends that). All in blueprint `api` (`url_prefix="/api"`). Pages (`web/pages.py`): `GET /recipes/new`, `GET /recipes/<id>` (§7.3), `GET /recipes/<id>/edit` (§7.4, `version=recipe.version`); view and edit give the 404 page if not live.
 
 ### §3.4 Key sequences
-Save from a stale form (`lld-seq-save.mmd`): `PUT {base_version: 3}` → `update` → `repo.get(id, include_deleted=True)`: missing or `deleted_at` set → 410 (deleted dialog, D-21, §3.5); stored version 4 ≠ 3 → 409 `changed_elsewhere` with `current_version: 4` → dialog **Reload theirs** (open `/recipes/<id>`, typing dropped) / **Keep mine** (PUT again with `base_version: 4`); equal → `update_if_version` (returns `None` if another save won the race → `ChangedElsewhere`) → 200 → read view.
+Save from a stale form (`lld-seq-save.mmd`): `PUT {base_version: 3}` → `update` → `repo.get(id, include_deleted=True)`: missing or `deleted_at` set → 410 (deleted dialog, D-21, §3.5); stored version 4 ≠ 3 → 409 `changed_elsewhere` with `current_version: 4` → dialog **Reload theirs** (open `/recipes/<id>`, typing dropped) / **Keep mine** (PUT again with `base_version: 4`); equal → `update_if_version` (returns `None` if another save or delete won the race → `ChangedElsewhere` / `DeletedElsewhere`) → 200 → read view.
 Delete and undo (`lld-seq-delete-undo.mmd`): DELETE sets `deleted_at` and purges other pending rows; `undo.js` stores `{id, title, until}` in `sessionStorage` and shows the bar on whatever page is open until `until`; Undo → POST restore; after the window the row is hidden everywhere and purged on the next list or delete.
 
 ### §3.5 Errors and edge cases
@@ -249,13 +251,13 @@ class RecipeFinder:
     def __init__(self, repo: RecipeRepository) -> None
     def search(self, query: str, by: SearchBy) -> list[RecipeSummary]   # list_live → filter rules via search.matches → list_order
 ```
-Runs on the home computer over all ~500 rows in Python (no index; well under 1 s) (A-02). Built (M1): constructor only; `GET /` uses `keeper.list_recipes()` with `q=""`, `by="name"` until search lands.
+Runs on the home computer over all ~500 rows in Python (no index; well under 1 s) (A-02). Both routes share `pages.list_context()`: `q = args["q"]` (default ""), `by = pages.parse_by(args["by"])` (unknown → `NAME`), `total_live = len(keeper.list_recipes())` (also purges expired deletes, A-18), `recipes = finder.search(q, by)`.
 
 ### §4.2 Contracts
 | Method | Path | Request | Response | Errors |
 |---|---|---|---|---|
 | GET | `/` | `?q=&by=name\|ingredient` (optional) | list page (§7.2) | bad `by` → treated as `name` |
-| GET | `/recipes/_list` | `?q=&by=` | HTML fragment `_list_items.html` (same context as §7.2) | same |
+| GET | `/recipes/_list` | `?q=&by=` | HTML fragment `_list_items.html` (same context as §7.2), fetched by `list.js` | same |
 
 ## §5 Backup (US-08, US-09)
 - **Responsibility:** export every live recipe to one versioned file; import any past version all-or-nothing.
@@ -280,7 +282,7 @@ class BackupService:
                                          # cookbook-YYYY-MM-DD.json from clock.now().astimezone() (local date, A-11)
     def import_file(self, data: bytes) -> ImportResult   # NotAnExport, NewerExportFormat, ImportInterrupted (§5.4)
 ```
-Built (M2): all of the above (T-03 export, T-04 import). Private helpers: `service._load(data)`, `service._plan(incoming, taken)`, `formats._check_types(raw)`, `formats._moment(value, default)`.
+Private helpers: `service._load(data)`, `service._plan(incoming, taken)`, `formats._check_types(raw)`, `formats._moment(value, default)`.
 
 ### §5.2 Contracts (errors are `{"error": code, "message": str}`, §6.3)
 | Method | Path | Request | Response | Errors |
@@ -364,7 +366,7 @@ As built: a `BUILDERS` table (exception class → `Mapped(status, code, message,
 | field codes (`FIELD_MESSAGES`, `field_message(code)`; unknown code → `required` text) | required: "Please fill this in" · not_whole: "Use a whole number of 1 or more" · bad_amount: "Enter one amount, e.g. 2 or 2½" · unclear_amount (D-33): "This amount is unclear; write e.g. 1000 for a thousand, or 1,0 for one" · too_long: "This is too long; please shorten it" · range: same text as bad_amount (reserved). Apply to per-row keys and list-level `ingredients`/`steps` keys alike (§1.2) |
 | constants | OUTSIDE_HOME "Home Cookbook only answers inside the home" · OTHER_WEBSITE "Home Cookbook only accepts requests made from its own pages" · RECIPE_GONE "That recipe isn't here any more" · PAGE_GONE "That page isn't here" · SERVER_ERROR "Something went wrong on the home computer. Please try again" · BAD_REQUEST "That request could not be read" · DISCARD_CHANGES "Discard changes?" |
 
-**Browser texts (D-34, `UI_TEXTS`):** JS holds no user-facing literals. `messages.UI_TEXTS` (dict key → text, `{name}` placeholders) is put into every template by the `pages.ui_texts` app context processor; `base.html` renders `<body data-texts='{{ ui_texts|tojson }}'>`; `api.js` `uiText(key, values = {})` reads it once and fills `{name}` (unknown key → ""). Keys: `undo` "Undo" · `deleted` "'{title}' deleted" · `restored` "'{title}' is back" · `restored_renamed` (= RESTORED_RENAMED above) · `undo_failed` "Could not undo" · `network` "Could not reach the home computer. Please try again" · `discard_changes` "Discard changes?" (§7.4). A new browser text = one new `UI_TEXTS` entry.
+**Browser texts (D-34, `UI_TEXTS`):** JS holds no user-facing literals. `messages.UI_TEXTS` (dict key → text, `{name}` placeholders) is put into every template by the `pages.ui_texts` app context processor; `base.html` renders `<body data-texts='{{ ui_texts|tojson }}'>`; `api.js` `uiText(key, values = {})` reads it once and fills `{name}` (unknown key → ""). Keys: `undo` "Undo" · `deleted` "'{title}' deleted" · `restored` "'{title}' is back" · `restored_renamed` (= RESTORED_RENAMED above) · `undo_expired` (= UNDO_EXPIRED above; `undo.js` fills the title it kept, A-17) · `undo_failed` "Could not undo" · `network` "Could not reach the home computer. Please try again" · `discard_changes` "Discard changes?" (§7.4). Added in M3: `changed_elsewhere`, `deleted_elsewhere` (= the rows above) · `reload_theirs` "Reload theirs" · `keep_mine` "Keep mine" · `save_as_new` "Save as new" · `discard_mine` "Discard my changes" (T-06) · `search_failed` "Could not search. Please try again" (T-07, A-20) · `add_favourite` "Add to favourites" · `remove_favourite` "Remove from favourites" · `favourite_failed` "Could not change the star. Please try again" (T-08) · `scaled_from` "Scaled from {n} servings" · `scaled_from_one` "Scaled from {n} serving" · `scaled_to` "Amounts now for {n} servings" · `scaled_to_one` "Amounts now for {n} serving" (T-09, A-25; `_one` used when n = 1). A new browser text = one new `UI_TEXTS` entry.
 
 ### §6.5 Request guard (`web/guard.py`, `before_request`)
 1. **Address:** `ipaddress.ip_address(request.remote_addr)` (IPv4-mapped IPv6 such as `::ffff:192.168.1.5` is unwrapped first) not private, loopback or link-local, or unparsable/missing → 403 `OUTSIDE_HOME` "Home Cookbook only answers inside the home".
@@ -380,18 +382,19 @@ Refusals are `text/plain` 403 on every path, `/api` included (known minor m-11; 
 ### §7.1 Shared (foundation)
 - `base.html`: viewport meta, `app.css`, `<body data-texts=…>` (§6.4), header with `{% block header_actions %}` and a `<details>` menu (`menu`, `menu-button`; `export-link` to `/export`; `import-input` hidden file input with label), `menu-message` status div, `<main class="page">`, `<div data-testid="undo-bar" hidden>`, loads `api.js`, `undo.js`, `menu.js` as `type="module"`, then `{% block scripts %}`. `error.html`: `heading`, `message`, `status`; `data-testid="error-page"` + "Back to recipes".
 - `api.js`: `export async function api(method: string, url: string, body?: object | FormData): Promise<{status: number, data: object}>` (sets JSON headers; never throws; network failure → `{status: 0, data: {error: "network", message: uiText("network")}}`); `export function uiText(key, values?)` (§6.4).
-- `undo.js`: `export function startUndo(id, title, seconds)`; stores `{id, title, until}` under `sessionStorage["cookbook.undo"]`; on every page load re-shows the bar until expiry (G-11); Undo → `POST /api/recipes/<id>/restore`, stores the outcome text under `cookbook.undo-notice`, reloads; the notice shows for 6 s. All texts via `uiText`.
-- `menu.js` (built M2): on `import-input` change → `FormData` field `file` → `api("POST", "/api/import", form)`; clears the input and closes the `<details>` menu. 200 → stores `data.message` under `sessionStorage["cookbook.import-notice"]` and reloads, so the list refreshes and the message survives the reload (A-14); on load a stored notice is removed and shown in `menu-message` (`textContent`, no timeout). Error → shows `data.message`, else `uiText("network")`, without reload. A guard 403 (text/plain, §6.5) therefore shows the network text (STATE minor m-4r).
-- All interactive elements carry `data-testid`: `recipe-row`, `star`, `search-input`, `search-by-name`, `search-by-ingredient`, `clear-search`, `add-recipe`, `undo-button`, `servings-input`, `scaled-note`, `reset-scale`, `ingredient-line`, `step`, `edit`, `delete`, `save`, `cancel`, `title-error`, `conflict-dialog`, `reload-theirs`, `keep-mine`, `deleted-dialog`, `save-as-new`, `discard`, `import-input`, `menu-message`. Added as built: `menu`, `menu-button`, `export-link`, `error-page`, `recipe-list`, `empty-state`, `add-recipe-empty`, `no-matches`, `back`, `recipe-title`, `servings`, `ingredient-list`, `step-list`, `recipe-form`, `title-input`, `servings-field`, `ingredient-rows`, `step-rows`, `ingredient-row`, `step-row`, `add-ingredient`, `add-step`, `ingredient-up/-down/-remove`, `step-up/-down/-remove`, `field-error`, `ingredients-error`, `steps-error`.
+- `undo.js`: `export function startUndo(id, title, seconds)`; stores `{id, title, until}` under `sessionStorage["cookbook.undo"]`; on every page load re-shows the bar until expiry (G-11); Undo → `POST /api/recipes/<id>/restore`, stores the outcome text under `cookbook.undo-notice`, reloads; the notice shows for 6 s. On 410 `undo_expired` the notice is `uiText("undo_expired", {title})` with the title the bar kept (a purged row has lost it, A-17). All texts via `uiText`.
+- `favourite.js` (shared, T-08, A-31): `export async function setFavourite(id, favourite): Promise<{ok, status}>` (`PUT …/favourite` via `api`; on failure shows the 410 message or `favourite_failed` in `menu-message`); `export function paintStar(button, favourite)` (★/☆, `aria-pressed`, `aria-label` from `add_favourite`/`remove_favourite`). Used by `list.js` and `view.js`.
+- `menu.js`: on `import-input` change → `FormData` field `file` → `api("POST", "/api/import", form)`; clears the input and closes the `<details>` menu. 200 → stores `data.message` under `sessionStorage["cookbook.import-notice"]` and reloads, so the list refreshes and the message survives the reload (A-14); on load a stored notice is removed and shown in `menu-message` (`textContent`, no timeout). Error → shows `data.message`, else `uiText("network")`, without reload. A guard 403 (text/plain, §6.5) therefore shows the network text (STATE minor m-4r).
+- All interactive elements carry `data-testid`: `recipe-row`, `star`, `search-input`, `search-by-name`, `search-by-ingredient`, `clear-search`, `add-recipe`, `undo-button`, `servings-input`, `scaled-note`, `reset-scale`, `ingredient-line`, `step`, `edit`, `delete`, `save`, `cancel`, `title-error`, `conflict-dialog`, `reload-theirs`, `keep-mine`, `deleted-dialog`, `save-as-new`, `discard`, `import-input`, `menu-message`. Added as built: `menu`, `menu-button`, `export-link`, `error-page`, `recipe-list`, `empty-state`, `add-recipe-empty`, `no-matches`, `back`, `recipe-title`, `servings`, `ingredient-list`, `step-list`, `recipe-form`, `title-input`, `servings-field`, `ingredient-rows`, `step-rows`, `ingredient-row`, `step-row`, `add-ingredient`, `add-step`, `ingredient-up/-down/-remove`, `step-up/-down/-remove`, `field-error`, `ingredients-error`, `steps-error`; M3: `search-form`, `servings-down`, `servings-up`, `scaled-text`, `scale-status` (aria-live, A-25), `conflict-message`. `conflict-dialog`/`deleted-dialog` are one element whose test id switches with the kind (§7.4).
 
 ### §7.2 Recipe list (`list.html`, `_list_items.html`, `list.js`)
-Context: `recipes: list[RecipeSummary]`, `q: str`, `by: str`, `total_live: int`. Empty states: `total_live == 0` → "No recipes yet" + Add recipe; no matches → "No recipes match '{q}'" + Clear search. Search form shown only when `total_live > 0`; rows grouped under "★ Favourites" and "All recipes (A–Z)". Built (M1): page and fragment template; `list.js` and `/recipes/_list` planned. `list.js`: on input (150 ms debounce) or toggle → `GET /recipes/_list?q=&by=` → replace list HTML; star → `PUT …/favourite` then refresh list.
+Context: `recipes: list[RecipeSummary]`, `q: str`, `by: str`, `total_live: int`. Empty states: `total_live == 0` → "No recipes yet" + Add recipe; no matches → "No recipes match '{q}'" + Clear search. Search form (`<form method="get" action="/">`, so search works without JS, A-19) shown only when `total_live > 0`; rows grouped under "★ Favourites" and "All recipes (A–Z)", or "Matches (A–Z)" while `q` is set (A-32). Each row's star is a `<button class="star" data-id aria-pressed>`. `list.js` (A-19): form `input` (150 ms debounce) or `submit` → aborts the previous request (`AbortController`) → `fetch("/recipes/_list?" + form params)` → replaces `#recipe-list` HTML → `history.replaceState` to `/?q=&by=` (or `/` when `q` is blank); failure → `role="alert"` note `search_failed` in place of the list. This raw `fetch` is the one allowed exception to "HTTP through `api.js`" (CONVENTIONS §1). Star (delegated click) → `setFavourite` (§7.1) → on 200 or 410 re-run the search (keeps the query) and refocus the star.
 
 ### §7.3 Recipe view (`view.html`, `view.js`)
-Context: `recipe: Recipe`, `lines: list[IngredientLine]` where `IngredientLine(amount_text: str | None, unit: str, name: str, qty_num: int | None, qty_den: int | None)` built in `pages.py` (`amount_text` = `display_amount`, qty from `parse_amount`). `ingredient_line(ingredient)` builds it. Each line renders `data-num`, `data-den`, `data-unit`, `data-text` (empty string when no amount) and the text "amount unit name" (blanks skipped). Built (M1): read-only view (title, star glyph, servings, ingredients, steps, back link); stepper, `view.js`, Edit and Delete planned. `view.js` picks the rounding via `kindFor(unit)` (§8). Servings stepper uses §8; shows "Scaled from {n} servings · Reset". Delete → `DELETE`, `startUndo`, go to `/`.
+Context: `recipe: Recipe`, `lines: list[IngredientLine]` where `IngredientLine(amount_text: str | None, unit: str, name: str, qty_num: int | None, qty_den: int | None)` built in `pages.py` (`amount_text` = `display_amount`, qty from `parse_amount`). `ingredient_line(ingredient)` builds it. Each line renders `data-num`, `data-den`, `data-unit`, `data-name`, `data-text` (empty string when no amount) and the text "amount unit name" (blanks skipped). Header: Back, Edit (link to `/recipes/<id>/edit`), Delete (`data-recipe-id`); star button as in §7.2. The saved servings stay in a visually hidden, `aria-hidden` `servings` span (A-22). `view.js`: stepper (`servings-down`/`-up`, `servings-input` with `data-saved`) accepts whole numbers 1–`MAX_SERVINGS` (1000, a JS constant mirroring §1.1, A-24), anything else resets the input; each line = `formatAmount(scale(...))` + `unitFor` + `nameFor` (§8), always from the saved amounts, or the saved text when equal; `scaled-note` "Scaled from {n} servings · Reset" and `scale-status` text from `scaled_from`/`scaled_to` (`_one` forms at n = 1). Delete → `DELETE`, `startUndo`, go to `/`; failure → message in `menu-message`. Star → `setFavourite` then `paintStar`.
 
 ### §7.4 Recipe edit (`edit.html`, `edit.js`)
-Context: `recipe: Recipe | None` (None = new), `form_json: dict` (RecipeIn from `pages.form_data(recipe)`; blank form = title "", servings 4, no rows; amount `None` → ""), rendered with `|tojson` into `<script type="application/json" id="form-data">`, `version: int | None` (on `data-version`). `edit.js` fills the form (at least one empty ingredient and step row). Ingredient and step rows: add, remove, move up/down (G-10). Every input carries `data-key` (`title`, `servings`, `ingredients.<i>.amount|unit|name`, `steps.<i>`); `renumber()` resets keys to DOM position after each add/move/remove, and the form sends every row (blanks too), so 422 keys (§1.2) land on the right row. List-level `ingredients`/`steps` errors show under that section's add button (`ingredients-error`/`steps-error`); an unknown key, or any other failure (400/500/network), shows under the title so a refused save is never silent. Save → POST or PUT (§3.2); 422 → messages beside fields, focus first; 409 duplicate → `title-error`; 409 changed → `conflict-dialog`; 410 → `deleted-dialog` (§3.5). Cancel/leave with changes → `confirm(uiText("discard_changes"))` and `beforeunload`; suppressed after a successful save or "Reload theirs". Built (M1): new-recipe form and POST; edit page, PUT and dialogs planned.
+Context: `recipe: Recipe | None` (None = new), `form_json: dict` (RecipeIn from `pages.form_data(recipe)`; blank form = title "", servings 4, no rows; amount `None` → ""), rendered with `|tojson` into `<script type="application/json" id="form-data">`, `version: int | None` (on `data-version`). `edit.js` fills the form (at least one empty ingredient and step row). Ingredient and step rows: add, remove, move up/down (G-10). Every input carries `data-key` (`title`, `servings`, `ingredients.<i>.amount|unit|name`, `steps.<i>`); `renumber()` resets keys to DOM position after each add/move/remove, and the form sends every row (blanks too), so 422 keys (§1.2) land on the right row. List-level `ingredients`/`steps` errors show under that section's add button (`ingredients-error`/`steps-error`); an unknown key, or any other failure (400/500/network), shows under the title so a refused save is never silent. Save → POST, or PUT `{base_version, recipe}` when the form has `data-recipe-id` and `asNew` is false (§3.2); 422 → messages beside fields, focus first; 409 duplicate → `title-error`; 409 changed → `version = current_version`, changed dialog; 410 → deleted dialog (§3.5). One request at a time (`busy`: Save and dialog buttons inert until it answers). **Dialog (A-27):** one inline `<div id="conflict" role="alertdialog" tabindex="-1" hidden>` holding `conflict-message` and four buttons tagged `data-for="changed|deleted"` (labels from `reload_theirs`, `keep_mine`, `save_as_new`, `discard_mine`); `showConflict(kind)` sets its `data-testid` to `conflict-dialog` or `deleted-dialog`, shows only that kind's buttons, disables Save and focuses it. Reload theirs → `/recipes/<id>`; Keep mine → Save again; Save as new → `asNew = true` then Save (every later Save POSTs, A-29); Discard → `/`. Cancel/leave with changes → `confirm(uiText("discard_changes"))` and `beforeunload`; suppressed after a successful save or "Reload theirs".
 
 ## §8 Servings scaler (browser, pure)
 - **Responsibility:** kitchen-friendly scaled amounts for display only (A-01, D-05, D-23).
@@ -404,27 +407,28 @@ export function kindFor(unit)  // "metric" | "counted" | "fraction"; see §8.5
 export function scale(num, den, fromServings, toServings, kind)    // -> {whole: number, frac: "" | "¼" | "⅓" | "½" | "⅔" | "¾"}
 export function formatAmount(result)                                // -> "1½", "½", "3", "84"
 export function unitFor(unit, result)                               // "cups"↔"cup", "grams"↔"gram" etc. from a small table; unknown units unchanged
+export function nameFor(name, unit, result)                         // counted items only (blank unit): plural/singular name, A-23
 ```
 
 ### §8.5 Rules and edge cases
 - `kindFor`: unit trimmed and casefolded is `g`, `gram`, `grams`, `ml`, `millilitre(s)` or `milliliter(s)` → `metric` (D-23); blank → `counted`; anything else (incl. `kg`, `l`, `cup`) → `fraction`. Units are never converted.
 - Exact integer arithmetic: q = num·to / (den·from). Candidates per whole by kind: `fraction` {0, ¼, ⅓, ½, ⅔, ¾, 1}; `counted` {0, ½, 1}; `metric` {0, 1} (whole numbers). Nearest by exact cross-multiplied distance; **ties go to the larger** candidate (so 62.5 g → 63 g); 1 carries into the whole.
 - Result 0 → smallest step (SPEC F-3): 1 for `metric` (1 g / 1 ml); ½ for `counted` (matches its ½ rounding); ¼ for `fraction`.
-- toServings = fromServings → `data-text` shown as is (no rounding). No amount → line unchanged; servings input < 1 or not whole → refused (input reset), saved recipe never changes.
+- toServings = fromServings → `data-text` shown as is (no rounding). No amount → line unchanged; servings input not a whole number 1–1000 → refused (input reset), saved recipe never changes.
+- `unitFor`/`nameFor` use the plural when `whole > 1` or `whole == 1` with a fraction, else the singular. `nameFor` (A-23, cautious; display only): name unchanged if the unit is not blank, or it contains a comma, bracket or the word of/to/for/or/and, or the changed word is invariant (fish, garlic, rice, herbs…). The changed word is the last one, or the first when it is a count word ("clove garlic" → "cloves garlic"). Plural: irregular table (tomato→tomatoes, loaf→loaves…), words ending in s unchanged, consonant+y → ies, ch/sh/x/z → +es, else +s; singular reverses these.
 - SPEC §5 checks: ¾ cup 8→4 = ⅜ → ⅓; 3 eggs 4→6 → 4½; ⅓ cup 4→6 → ½; 2 cups 8→4 → "1 cup"; 253 g 3→1 → "84 g"; 150 ml 3→1 → "50 ml"; 2 tbsp 3→1 → "⅔ tbsp".
 
 ## Changes since last milestone
-M2 (Backup format locked; T-03 c4dd6b9, T-04 51f2768). M1 rows are in git history (`8cf1ef8`).
+M3 (T-05..T-10; main 00ab80b → e17a699). M2 rows are in git history (00ab80b), M1 rows in `8cf1ef8`. All §3 contracts and route shapes are as planned; rows record detail added or differing.
 
 | Section | What changed | Why / task |
 |---|---|---|
-| §5.2, §6.1 | `GET /export` lives in `web/api.py`, mounted by `bp.record_once` outside the `/api` prefix; `factory.py` untouched | Keep the shared factory frozen (A-10, T-03) |
-| §5.1, §5.3 | Export filename uses the home computer's local date; timestamps in the file are UTC `…Z`, whole seconds | A-11, T-03 |
-| §5.1 | `FORMAT_MARKER` constant; `upgrade` owns the marker/version checks (bool and < 1 refused as `not_an_export`) | As built, T-03/T-04 |
-| §5.2, §6.3 | `POST /api/import` response adds `skipped_titles[]`; no `file` part → 400 `not_an_export`; > 5 MB keeps status 413 with code `not_an_export` (old §6.3 row said 400) | As built / doc fix, T-04 |
-| §5.4, §5.5 | Strict per-field v1 type check (`_check_types`) before `parse_draft`, so wrong types are refused, not coerced | Lenient form parsing must not rewrite backups, T-04 |
-| §5.4, §5.5 | UTF-8 BOM accepted (`utf-8-sig`); deep nesting → `not_an_export`; dates with offsets converted to UTC, naive taken as UTC | Robust reading of hand-saved files, T-04 |
-| §5.5 | Missing `favourite` → false; missing `created_at` → import time; missing `updated_at` → `created_at` | A-12, T-04 |
-| §5.5 | A rename that would pass 200 chars refuses the whole file (not truncated) | A-13, T-04 |
-| §6.4 | `imported` text built by `messages.imported(result)` | As built, T-04 |
-| §7.1 | `menu.js` built: result message via `sessionStorage["cookbook.import-notice"]` + reload; errors shown in place | A-14, T-04 |
+| §0.7 | Shared-module exceptions recorded: `undo.js` internal fix, global `[hidden]` rule, new shared `favourite.js` | A-17, A-28, A-31; T-05/T-06/T-08 |
+| §3.1, §3.2 | `RecipeKeeper.undo_seconds` feeds DELETE's `undo_seconds`; restore `title` derived in the route from `renamed_to`; `restore` returns an already-live recipe as is, retries `RESTORE_ATTEMPTS = 3` on a title race, purged row → `UndoExpired("")` | A-15, A-16; T-05 |
+| §3.1, §3.2 | `update` lost-race path (`_lost_race`); PUT 400 for bad `base_version`; version bumped only by `update` | A-26; T-06 |
+| §7.4, §7.1 | One `alertdialog` with switching test id, `conflict-message`, `asNew`, one-request-at-a-time `busy` | A-27, A-29; T-06 |
+| §4.1, §4.2, §7.2 | `list_context()`/`parse_by()`, `total_live` from the keeper; `list.js` debounce, abort, `replaceState`; GET form works without JS; "Matches (A–Z)" heading; its raw fragment `fetch` recorded as the one exception to "HTTP through api.js" (CONVENTIONS §1, T-07 minor m1) | A-18, A-19, A-32; T-07/T-10 |
+| §3.2, §7.1 | Favourite PUT 400 when not a bool; `favourite.js` `setFavourite`/`paintStar`; star buttons on list and view | A-30, A-31; T-08 |
+| §7.3, §8.1, §8.5, §1.1 | `nameFor` and its plural rule; `data-name` on lines; hidden saved-servings span; JS servings cap 1000 | A-22..A-24; T-09 |
+| §6.4, §7.1 | 15 `UI_TEXTS` keys added (incl. `undo_expired`, 4 scaler keys); test ids `search-form`, `servings-down/-up`, `scaled-text`, `scale-status`, `conflict-message` | T-05..T-09, A-20, A-25 |
+| CONVENTIONS §5 | Real-app subprocess fixture `start_app` and `COOKBOOK_TEST_SHOTS` | A-33; T-10 |
