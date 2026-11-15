@@ -12,9 +12,9 @@
 | Owner mode | builder: plain words, technical detail collapsed |
 | Size | medium · signals: backend, database, deployment (home Wi-Fi) · 9 stories · full track |
 | Milestone | M3 · Ready at home (M1 done: 393b7c7 · M2 done: d4421d2) |
-| Next step | M3: T-05 Delete a recipe with a 10-second Undo · backend-coder → frontend-coder. Start with `/setup-project resume home-cookbook` in a fresh chat |
+| Next step | M3: T-06 Edit from two devices, T-07 Search, T-09 Scale servings (independent; run in parallel) |
 | Started | 2026-11-13 07:50 +05:30 (cost.py --since) · Budget 0 (no cap) |
-| Last updated | 2026-11-14 |
+| Last updated | 2026-11-15 |
 
 ## Config
 | Field | Value |
@@ -77,6 +77,8 @@
 | T-04 | services/backup/service.py | A title repeated in the file that the app already holds is listed twice under "skipped" (m-8; follows LLD invariant) | S |
 | T-04 | tests/unit/test_backup_import.py | Every-fixture test only picks up files named v*-*.json (nit) | S |
 | T-04 | services/backup/formats.py, web/messages.py | A file needing a rename past 200 chars is refused as "not an export"; give it a clearer message (D-37) | S |
+| T-05 | services/backup or web/errors.py | API 410 text for a purged recipe reads "'' is gone" (no screen shows it) (nit) | S |
+| T-05 | docs/LLD.md §0.7 | Note that undo.js was edited internally by T-05 (m-a; do at M3 as-built sync) | S |
 
 ## Context additions
 | Role | Also read | Why (from gap report) |

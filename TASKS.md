@@ -89,13 +89,13 @@ Test files listed under `Files:` are written by the tester. Paths are relative t
 - Depends on: T-02
 - Files: src/cookbook/services/keeper.py, src/cookbook/web/api.py, src/cookbook/templates/view.html, src/cookbook/static/js/view.js, tests/unit/test_keeper_delete.py, tests/integration/test_api_delete.py, tests/e2e/test_delete_undo.py
 - Context: SPEC US-03 · LLD §2.1, §3.1, §3.2, §3.4, §3.5, §6.3, §6.4, §7.1, §7.3 · files: src/cookbook/services/keeper.py, src/cookbook/web/api.py, src/cookbook/templates/view.html, src/cookbook/static/js/undo.js, src/cookbook/static/js/view.js, docs/wireframes/recipe-list.html, docs/wireframes/recipe-view.html
-- Status: Backlog
+- Status: Done
 - Acceptance criteria:
-  - [ ] Tapping "Delete" on "Lemon Cake" returns to the list at once without it and without an "Are you sure?" question; the bar shows "'Lemon Cake' deleted · Undo"; tapping "Undo" within 10 seconds brings it back with every field unchanged
-  - [ ] Opening another recipe during the window keeps the bar showing until the window ends; after the window (fake clock) Undo is refused with "Too late to undo; 'Lemon Cake' is gone" and the recipe never comes back in the list (S-04)
-  - [ ] Deleting a second recipe while the bar shows makes the first delete final and shows the bar for the second
-  - [ ] If a new "Lemon Cake" is saved during the window, Undo restores the old one as "Lemon Cake (2)" and the bar says "'Lemon Cake' is back as 'Lemon Cake (2)' because another recipe now has its name"
-- Result:
+  - [x] Tapping "Delete" on "Lemon Cake" returns to the list at once without it and without an "Are you sure?" question; the bar shows "'Lemon Cake' deleted · Undo"; tapping "Undo" within 10 seconds brings it back with every field unchanged
+  - [x] Opening another recipe during the window keeps the bar showing until the window ends; after the window (fake clock) Undo is refused with "Too late to undo; 'Lemon Cake' is gone" and the recipe never comes back in the list (S-04)
+  - [x] Deleting a second recipe while the bar shows makes the first delete final and shows the bar for the second
+  - [x] If a new "Lemon Cake" is saved during the window, Undo restores the old one as "Lemon Cake (2)" and the bar says "'Lemon Cake' is back as 'Lemon Cake (2)' because another recipe now has its name"
+- Result: approved 2026-11-15 · 3b55215 · 4/4 goals · 246 tests, coverage 92% · 1 debug round (M-1 empty title in too-late message) · review 0 major/1 minor
 
 ### T-06 · Edit a recipe safely from two devices
 - Owner: backend-coder → frontend-coder

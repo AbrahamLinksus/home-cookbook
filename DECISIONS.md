@@ -60,3 +60,6 @@
 | A-12 | 2026-11-14 | Import: missing `favourite` / dates | favourite defaults false; missing dates default to the import time | backend-coder | T-04 |
 | A-13 | 2026-11-14 | Import: rename past 200 chars | Refuse the whole file (nothing written) rather than truncate | debugger | T-04 |
 | A-14 | 2026-11-14 | Import result display | menu.js stores the message in sessionStorage and reloads, so the list refreshes and the message stays | frontend-coder | T-04 |
+| A-15 | 2026-11-15 | Undo window length source | RecipeKeeper exposes undo_seconds; routes read it from there | backend-coder | T-05 |
+| A-16 | 2026-11-15 | Title for "back as 'X (2)'" message | Derived in the api.py route by cutting the " (n)" suffix; restore() signature kept as in LLD | backend-coder, debugger | T-05 |
+| A-17 | 2026-11-15 | undo.js edited by a feature task | Internal fix for the too-late text; startUndo export unchanged; LLD §0.7 note due at M3 as-built sync | debugger | T-05 |
