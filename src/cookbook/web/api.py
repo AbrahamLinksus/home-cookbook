@@ -29,6 +29,22 @@ def create_recipe() -> ResponseReturnValue:
     return jsonify({"id": recipe.id, "version": recipe.version}), 201
 
 
+@bp.delete("/recipes/<int:recipe_id>")
+def delete_recipe(recipe_id: int) -> ResponseReturnValue:
+    keeper = services().keeper
+    recipe = keeper.delete(recipe_id)
+    return jsonify({"id": recipe.id, "title": recipe.title, "undo_seconds": keeper.undo_seconds})
+
+
+@bp.post("/recipes/<int:recipe_id>/restore")
+def restore_recipe(recipe_id: int) -> ResponseReturnValue:
+    recipe, renamed_to = services().keeper.restore(recipe_id)
+    # free_title only ever appends " (n)", so cutting it off gives the deleted name.
+    # `title` is the name it had when deleted (the bar text quotes it); `renamed_to` the new one.
+    title = recipe.title if renamed_to is None else renamed_to.rsplit(" (", 1)[0]
+    return jsonify({"id": recipe.id, "title": title, "renamed_to": renamed_to})
+
+
 @bp.post("/import")
 def import_recipes() -> ResponseReturnValue:
     upload = request.files.get("file")

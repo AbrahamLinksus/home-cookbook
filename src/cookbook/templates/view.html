@@ -2,6 +2,8 @@
 {% block title %}{{ recipe.title }} · Home Cookbook{% endblock %}
 {% block header_actions %}
 <a class="btn" href="/" data-testid="back">&#8249; Recipes</a>
+<button class="btn danger" type="button" data-testid="delete"
+        data-recipe-id="{{ recipe.id }}">Delete</button>
 {% endblock %}
 {% block content %}
 <div class="box box-bar">
@@ -30,4 +32,7 @@
     </ol>
   </section>
 </div>
+{% endblock %}
+{% block scripts %}
+<script type="module" src="{{ url_for('static', filename='js/view.js') }}"></script>
 {% endblock %}

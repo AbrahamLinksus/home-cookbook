@@ -23,6 +23,7 @@ DELETED_ELSEWHERE: Final = "This recipe was deleted on another device"
 DISCARD_CHANGES: Final = "Discard changes?"
 
 RESTORED_RENAMED: Final = "'{title}' is back as '{renamed}' because another recipe now has its name"
+UNDO_EXPIRED: Final = "Too late to undo; '{title}' is gone"
 
 # Texts the browser shows (undo.js, api.js, edit.js); base.html renders them into <body data-texts>.
 # "{name}" placeholders are filled in by api.js uiText().
@@ -31,6 +32,7 @@ UI_TEXTS: Final = {
     "deleted": "'{title}' deleted",
     "restored": "'{title}' is back",
     "restored_renamed": RESTORED_RENAMED,
+    "undo_expired": UNDO_EXPIRED,
     "undo_failed": "Could not undo",
     "network": "Could not reach the home computer. Please try again",
     "discard_changes": DISCARD_CHANGES,
@@ -58,7 +60,7 @@ def duplicate_title(existing: str) -> str:
 
 
 def undo_expired(title: str) -> str:
-    return f"Too late to undo; '{title}' is gone"
+    return UNDO_EXPIRED.format(title=title)
 
 
 def restored_renamed(title: str, renamed: str) -> str:
