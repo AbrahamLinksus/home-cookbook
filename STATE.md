@@ -5,14 +5,14 @@
 | Field | Value |
 |---|---|
 | Problem | A private recipe box on the home computer, used from phone and laptop: save family recipes, search by name or ingredient, scale servings, favourites on top, export everything to a file |
-| Repo | local (/home/Jake/recipe-test/home-cookbook.git) |
+| Repo | AbrahamLinksus/home-cookbook (GitHub, public; pushed 2026-11-15). Old local bare repo kept as remote `local` |
 | Local folder | /home/Jake/recipe-test/home-cookbook (worktrees in /home/Jake/recipe-test/home-cookbook-wt/; start sessions in /home/Jake/recipe-test) |
 | Status | Complete |
 | Stage | Complete — handover approved 2026-11-15 (main 07d5d9c + follow-up 16e1af3) |
 | Owner mode | builder: plain words, technical detail collapsed |
 | Size | medium · signals: backend, database, deployment (home Wi-Fi) · 9 stories · full track |
 | Milestone | All milestones done (M1: 393b7c7 · M2: d4421d2 · M3: 015a51b) |
-| Next step | None — project complete. Owner confirmed 2026-11-15 the app works on the phone over home Wi-Fi. Optional later: push to GitHub (see Notes) so CI in .github/workflows/ci.yml starts running; re-render docs/diagrams/lld-components.png with favourite.js |
+| Next step | None — project complete. Owner confirmed 2026-11-15 the app works on the phone over home Wi-Fi. Optional later: re-render docs/diagrams/lld-components.png with favourite.js |
 | Started | 2026-11-13 07:50 +05:30 (cost.py --since) · Budget 0 (no cap) |
 | Last updated | 2026-11-15 |
 
@@ -20,7 +20,7 @@
 | Field | Value |
 |---|---|
 | Owner | Jake Roberts (from git config) |
-| GitHub owner | — (local repo; gh login expired) |
+| GitHub owner | AbrahamLinksus |
 | Approval mode | every-task (default) |
 | Cost mode | quality (default) |
 | Visuals | installed (plugin venv on Python 3.12 via uv; 3.14 can't build greenlet for playwright 1.49.1) |
@@ -110,7 +110,7 @@
 ## Notes for the next session
 - LLD is 422 lines after the M2 sync (400-line guide); trimming further would cut real content.
 - taskgit approve prints "approved: <hash>" then exits 1 from a `pwd` error after the worktree is removed; the merge and push succeed — verify with git log / ls-remote.
-- Repo is local-only. To move to GitHub later: `git remote set-url origin <url> && git push -u origin --all`.
+- Repo moved to GitHub 2026-11-15 (origin = github.com/AbrahamLinksus/home-cookbook, public). The old bare repo is remote `local`.
 - Shared files (STATE/DECISIONS) on wip/plan: edit them only after a step's `done`, then `taskgit checkpoint` before the next agent starts — a step's scope check reverts them otherwise.
 - planner can't write docs/*.mmd; the Orchestrator copies .results/hld/hld.mmd → docs/hld-dataflow.mmd and renders it.
 - capture.py `term` images can't draw accented letters (font); use `md` rendering for text with accents.
