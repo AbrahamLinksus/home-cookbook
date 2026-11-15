@@ -129,7 +129,7 @@ In plain words: each recipe carries a version number. A save says which version 
 ![Save from a stale form](diagrams/lld-seq-save.png)
 
 Source: `docs/diagrams/lld-seq-save.mmd` (accurate; when the final write loses a race, `RecipeKeeper._lost_race` answers either "changed" or "deleted").
-Files involved, in order: `src/cookbook/static/js/edit.js` (`sendRecipe` with `base_version`, `showConflict`) → `src/cookbook/web/api.py` (`update_recipe`, `_base_version_in`) → `src/cookbook/services/keeper.py` (`update`, `_lost_race`) → `src/cookbook/adapters/sqlite_repo.py` (`get`, `update_if_version`) → `src/cookbook/web/errors.py` (`_changed`, 410 row in `BUILDERS`).
+Files involved, in order: `src/cookbook/static/js/edit.js` (`sendRecipe` with `base_version`, `showConflict`) → `src/cookbook/web/api.py` (`update_recipe`, `_base_version_in`) → `src/cookbook/services/keeper.py` (`update`, `_lost_race`) → `src/cookbook/adapters/sqlite_repo.py` (`get`, `update_if_version`) → `src/cookbook/web/errors.py` (`_changed`, lines 39-41, turns `ChangedElsewhere` into 409 `changed_elsewhere`; the `DeletedElsewhere` row in `BUILDERS`, line 57, turns a deleted recipe into 410 `deleted_elsewhere`).
 
 ### Delete and Undo
 
@@ -245,7 +245,7 @@ In plain words: one command, `scripts/check.sh`, runs every automatic check and 
 - CI: `.github/workflows/ci.yml` runs on every push and pull request on `ubuntu-latest`: `uv sync`, caches and installs Playwright's Chromium shell (`uv run playwright install --with-deps --only-shell chromium`), then `scripts/check.sh`. Read-only permissions, 20-minute limit, no deploy step.
 - The repository's remote today is a local bare repository on the home computer (`home-cookbook.git` next to the project folder; D-01), so the CI workflow does not run yet. It starts working as soon as the code is pushed to GitHub: `git remote set-url origin <url> && git push -u origin --all`.
 
-**Known limitations and tech debt** (all small; full list in `STATE.md`, "Known minors"):
+**Known limitations and tech debt** (all small, none blocks everyday use):
 - A guard refusal (403) is plain text even under `/api/`, so a refused import shows "Could not reach the home computer".
 - The list page reads every recipe twice per search keystroke (`list_context` counts, then searches); fine at ~500 recipes. No length cap on the search text.
 - An import refused because a renamed title would pass 200 characters says "not an export" rather than a specific reason (D-37).
@@ -255,5 +255,9 @@ In plain words: one command, `scripts/check.sh`, runs every automatic check and 
 - No JavaScript linter (no Node by design); JS is covered by the Playwright tests and review.
 - Browser-test gaps: no 1280-wide run for some screens; some e2e tests lack their scenario tag (S-xx); a few helpers are duplicated across e2e files.
 - No auto-start when the home computer boots (D-15).
+- If the database file is damaged ("file is not a database"), start-up fails with a raw error instead of a one-line explanation.
+- An import file that repeats a title the app already holds lists that title twice under "skipped".
+- On the edit screen, keyboard focus is lost after "move to end" or "Remove" on an ingredient row, and a disabled Save button does not look disabled.
+- After a failed favourite toggle, the failure note stays on screen even when a later toggle succeeds.
 
 </details>

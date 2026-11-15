@@ -49,7 +49,7 @@ In plain words: the list links to an empty form; the form is filled by JavaScrip
 11. `src/cookbook/domain/rules.py` line 36, `parse_draft()`: checks title, servings, ingredients and steps, collecting every problem; raises `InvalidRecipe(fields)` if any.
 12. `src/cookbook/web/__init__.py` line 19, `services()`: fetches the services that `create_app` stored in `app.extensions["cookbook"]` (`factory.py` lines 33–37).
 13. `src/cookbook/services/keeper.py` line 44, `RecipeKeeper.create()`: stamps `created_at`/`updated_at` from the injected clock, `favourite=False`, and calls `repo.add(...)`.
-14. `src/cookbook/adapters/sqlite_repo.py` line 141, `add()`: opens a connection with the safety pragmas (`_transaction`, line 103), `_insert()` (line 75) writes the row with `version = 1`. If the unique title index fires, `_duplicate()` (line 61) turns it into `DuplicateTitle(existing_title)`.
+14. `src/cookbook/adapters/sqlite_repo.py` line 141, `add()`: opens a connection with the safety pragmas (`_transaction`, line 104), `_insert()` (line 75) writes the row with `version = 1`. If the unique title index fires, `_duplicate()` (line 61) turns it into `DuplicateTitle(existing_title)`.
 15. Back in `api.py` line 38: answer `201 {"id", "version"}`.
 
 **If something is wrong**
@@ -137,4 +137,4 @@ Commands (from the project folder):
 **What to do next with more time**
 - Push the code to GitHub so the ready-made CI workflow (`.github/workflows/ci.yml`) runs on every change; today the remote is a local bare repository.
 - Start the app automatically when the home computer boots (left out on purpose, D-15).
-- Small fixes from `STATE.md` "Known minors": JSON answers for refused `/api/` requests so a blocked import shows the right message, a clearer message for the 200-character rename case (D-37), and a single database read per search keystroke.
+- Small fixes from the known limitations in `docs/ARCHITECTURE.md` §8: JSON answers for refused `/api/` requests so a blocked import shows the right message, a clearer message for the 200-character rename case (D-37), and a single database read per search keystroke.
