@@ -3,7 +3,13 @@
 from datetime import timedelta
 from typing import Final
 
-from cookbook.domain.errors import DuplicateTitle, RecipeNotFound, UndoExpired
+from cookbook.domain.errors import (
+    ChangedElsewhere,
+    DeletedElsewhere,
+    DuplicateTitle,
+    RecipeNotFound,
+    UndoExpired,
+)
 from cookbook.domain.models import NewRecipe, Recipe, RecipeDraft, RecipeSummary
 from cookbook.domain.ports import Clock, RecipeRepository
 from cookbook.domain.rules import free_title, list_order
@@ -39,6 +45,30 @@ class RecipeKeeper:
         """Save a new recipe; DuplicateTitle when a live recipe has the same title."""
         now = self._clock.now()
         return self._repo.add(NewRecipe(draft, favourite=False, created_at=now, updated_at=now))
+
+    def update(self, recipe_id: int, draft: RecipeDraft, base_version: int) -> Recipe:
+        """Save an edit made from `base_version`.
+
+        DeletedElsewhere when the recipe is gone or waiting out its undo window;
+        ChangedElsewhere when a save by another device came first; DuplicateTitle when
+        another live recipe has the title. Starring never bumps `version` (LLD §3.5).
+        """
+        current = self._repo.get(recipe_id, include_deleted=True)
+        if current is None or current.deleted_at is not None:
+            raise DeletedElsewhere(str(recipe_id))
+        if current.version != base_version:
+            raise ChangedElsewhere(current.version)
+        saved = self._repo.update_if_version(recipe_id, draft, base_version, self._clock.now())
+        if saved is None:
+            return self._lost_race(recipe_id)
+        return saved
+
+    def _lost_race(self, recipe_id: int) -> Recipe:
+        """update_if_version matched no row: someone saved or deleted in between."""
+        now_current = self._repo.get(recipe_id)
+        if now_current is None:
+            raise DeletedElsewhere(str(recipe_id))
+        raise ChangedElsewhere(now_current.version)
 
     def delete(self, recipe_id: int) -> Recipe:
         """Hide the recipe for the undo window; any earlier pending delete becomes final."""

@@ -23,10 +23,26 @@ def _recipe_in() -> Mapping[str, object]:
     return recipe
 
 
+def _base_version_in() -> int:
+    """`base_version` of the JSON body; 400 when missing or not a whole number."""
+    body: Any = request.get_json(silent=True)
+    value = body.get("base_version") if isinstance(body, dict) else None
+    if not isinstance(value, int) or isinstance(value, bool):
+        abort(400)
+    return value
+
+
 @bp.post("/recipes")
 def create_recipe() -> ResponseReturnValue:
     recipe = services().keeper.create(parse_draft(_recipe_in()))
     return jsonify({"id": recipe.id, "version": recipe.version}), 201
+
+
+@bp.put("/recipes/<int:recipe_id>")
+def update_recipe(recipe_id: int) -> ResponseReturnValue:
+    base_version = _base_version_in()
+    recipe = services().keeper.update(recipe_id, parse_draft(_recipe_in()), base_version)
+    return jsonify({"id": recipe.id, "version": recipe.version})
 
 
 @bp.delete("/recipes/<int:recipe_id>")

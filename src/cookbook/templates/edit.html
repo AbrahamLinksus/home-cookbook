@@ -9,6 +9,16 @@
     <strong>{{ "Edit recipe" if recipe else "New recipe" }}</strong>
     <button type="submit" class="primary" data-testid="save">Save</button>
   </div>
+  <div class="dialog" id="conflict" role="alertdialog" aria-labelledby="conflict-message"
+       tabindex="-1" hidden data-testid="conflict-dialog">
+    <strong id="conflict-message" data-testid="conflict-message"></strong>
+    <div>
+      <button type="button" data-for="changed" data-action-name="reload-theirs" data-text="reload_theirs" data-testid="reload-theirs"></button>
+      <button type="button" class="primary" data-for="changed" data-action-name="keep-mine" data-text="keep_mine" data-testid="keep-mine"></button>
+      <button type="button" class="primary" data-for="deleted" data-action-name="save-as-new" data-text="save_as_new" data-testid="save-as-new"></button>
+      <button type="button" data-for="deleted" data-action-name="discard-mine" data-text="discard_mine" data-testid="discard"></button>
+    </div>
+  </div>
   <div class="box">
     <label class="field-label" for="title-input">Title</label>
     <input type="text" id="title-input" name="title" autocomplete="off"

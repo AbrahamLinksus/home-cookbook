@@ -90,3 +90,11 @@ def view_recipe(recipe_id: int) -> str:
     recipe = services().keeper.get(recipe_id)
     lines = [ingredient_line(i) for i in recipe.ingredients]
     return render_template("view.html", recipe=recipe, lines=lines)
+
+
+@bp.get("/recipes/<int:recipe_id>/edit")
+def edit_recipe(recipe_id: int) -> str:
+    recipe = services().keeper.get(recipe_id)
+    return render_template(
+        "edit.html", recipe=recipe, form_json=form_data(recipe), version=recipe.version
+    )

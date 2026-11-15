@@ -108,15 +108,46 @@ function showFieldErrors(fields) {
   first?.focus();
 }
 
-async function save() {
-  clearErrors();
-  saveButton.disabled = true;
-  const { status, data } = await api("POST", "/api/recipes", { recipe: readForm() });
-  if (status === 201) {
-    leaving = true;
-    window.location.assign(`/recipes/${data.id}`);
-    return;
+const recipeId = form.dataset.recipeId;
+let version = form.dataset.version === "" ? null : Number(form.dataset.version);
+const conflict = document.getElementById("conflict");
+const conflictText = conflict.querySelector('[data-testid="conflict-message"]');
+const conflictButtons = [...conflict.querySelectorAll("[data-for]")];
+const DIALOG_TESTIDS = { changed: "conflict-dialog", deleted: "deleted-dialog" };
+let asNew = false; // after "Save as new" the form stays a new recipe (POST) for good (LLD §3.5)
+let busy = false;
+
+function go(url) {
+  leaving = true;
+  window.location.assign(url);
+}
+
+function showConflict(kind, message) {
+  conflict.dataset.kind = kind;
+  conflict.dataset.testid = DIALOG_TESTIDS[kind];
+  conflictText.textContent = message;
+  for (const button of conflictButtons) {
+    button.hidden = button.dataset.for !== kind;
   }
+  conflict.hidden = false;
+  saveButton.disabled = true;
+  conflict.focus();
+}
+
+function hideConflict() {
+  conflict.hidden = true;
+  conflictText.textContent = "";
+  saveButton.disabled = false;
+}
+
+function sendRecipe() {
+  if (recipeId && !asNew) {
+    return api("PUT", `/api/recipes/${recipeId}`, { base_version: version, recipe: readForm() });
+  }
+  return api("POST", "/api/recipes", { recipe: readForm() });
+}
+
+function refusedSave(status, data) {
   saveButton.disabled = false;
   if (status === 409 && data.error === "duplicate_title") {
     showFieldErrors({ title: data.message });
@@ -125,6 +156,58 @@ async function save() {
   } else {
     showError(form.elements.title, data.message || "");
     form.elements.title.focus();
+  }
+}
+
+function setBusy(on) {
+  busy = on;
+  for (const button of conflictButtons) button.disabled = on;
+}
+
+/** One request at a time: Save and the dialog's buttons are inert until it answers. */
+async function save() {
+  if (busy || leaving) return;
+  setBusy(true);
+  try {
+    await sendAndHandle();
+  } finally {
+    setBusy(false);
+  }
+}
+
+async function sendAndHandle() {
+  clearErrors();
+  hideConflict();
+  saveButton.disabled = true;
+  const { status, data } = await sendRecipe();
+  if (status === 201 || (status === 200 && recipeId)) {
+    go(`/recipes/${data.id}`);
+  } else if (recipeId && status === 409 && data.error === "changed_elsewhere") {
+    version = data.current_version;
+    showConflict("changed", data.message);
+  } else if (recipeId && status === 410) {
+    showConflict("deleted", data.message);
+  } else {
+    refusedSave(status, data);
+  }
+}
+
+function saveAsNew() {
+  asNew = true;
+  return save();
+}
+
+const conflictActions = {
+  "reload-theirs": () => go(`/recipes/${recipeId}`),
+  "keep-mine": () => save(),
+  "save-as-new": saveAsNew,
+  "discard-mine": () => go("/"),
+};
+
+function setupConflict() {
+  for (const button of conflict.querySelectorAll("[data-action-name]")) {
+    button.textContent = uiText(button.dataset.text);
+    button.addEventListener("click", conflictActions[button.dataset.actionName]);
   }
 }
 
@@ -158,6 +241,7 @@ function cancel() {
   window.location.assign("/");
 }
 
+setupConflict();
 fill(JSON.parse(document.getElementById("form-data").textContent));
 initial = JSON.stringify(readForm());
 ingredientRows.addEventListener("click", onRowClick);
