@@ -144,14 +144,14 @@ Test files listed under `Files:` are written by the tester. Paths are relative t
 - Depends on: T-02
 - Files: src/cookbook/static/js/scaler.js, src/cookbook/static/js/view.js, src/cookbook/templates/view.html, tests/e2e/test_scaler.py, tests/e2e/test_scale_view.py
 - Context: SPEC US-06 · LLD §7.3, §8 · files: src/cookbook/templates/view.html, src/cookbook/static/js/*.js, docs/wireframes/recipe-view.html
-- Status: Backlog
+- Status: Done
 - Acceptance criteria:
-  - [ ] "Grandma's Apple Pie" 8 → 4 shows "1 cup flour", "½ cup butter", "3 apples", "⅓ cup sugar", "½ tsp cinnamon", "salt, to taste" and "Scaled from 8 servings · Reset"; Reset shows 8 servings and the amounts as saved
-  - [ ] "Buttermilk Pancakes" 4 → 6 shows "4½ eggs", "½ cup sugar"; "Oat Cookies" 24 → 36 shows "1½ cups oats", "1½ eggs" (S-13)
-  - [ ] "Aunt May's Scones" 3 → 1 shows "84 g flour", "50 ml buttermilk", "⅔ tbsp sugar"; 62.5 g rounds to "63 g"; amounts that would round to 0 show "1 g", "½" egg or "¼ tsp", never 0 (S-02)
-  - [ ] Servings 0, -1 or "abc" are refused and the input resets; after scaling, reloading the page shows the saved servings and amounts unchanged
-  - [ ] `window.cookbookScaler` tests cover every check row in LLD §8.5
-- Result:
+  - [x] "Grandma's Apple Pie" 8 → 4 shows "1 cup flour", "½ cup butter", "3 apples", "⅓ cup sugar", "½ tsp cinnamon", "salt, to taste" and "Scaled from 8 servings · Reset"; Reset shows 8 servings and the amounts as saved
+  - [x] "Buttermilk Pancakes" 4 → 6 shows "4½ eggs", "½ cup sugar"; "Oat Cookies" 24 → 36 shows "1½ cups oats", "1½ eggs" (S-13)
+  - [x] "Aunt May's Scones" 3 → 1 shows "84 g flour", "50 ml buttermilk", "⅔ tbsp sugar"; 62.5 g rounds to "63 g"; amounts that would round to 0 show "1 g", "½" egg or "¼ tsp", never 0 (S-02)
+  - [x] Servings 0, -1 or "abc" are refused and the input resets; after scaling, reloading the page shows the saved servings and amounts unchanged
+  - [x] `window.cookbookScaler` tests cover every check row in LLD §8.5
+- Result: approved 2026-11-15 · 9d081f5 · 5/5 goals · 428 tests, coverage 92% · 1 debug round (M1 plural names kept when scaling down) + main-merge conflict in messages.py · review 0 major/3 minor
 
 ### T-10 · Whole cookbook on phone and laptop at home
 - Owner: frontend-coder

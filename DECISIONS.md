@@ -67,3 +67,7 @@
 | A-19 | 2026-11-15 | Search without JavaScript | Search form is GET / ?q=&by=; list.js intercepts it, debounces 150 ms, aborts stale requests, keeps the URL in step (replaceState) | frontend-coder | T-07 |
 | A-20 | 2026-11-15 | Search failure text | UI_TEXTS["search_failed"] = "Could not search. Please try again" (LLD §6.4 entry due at M3 sync) | backend-coder | T-07 |
 | A-21 | 2026-11-15 | Browser test file name | tests/e2e/test_search_browser.py (basename clash with tests/integration/test_search.py) | tester | T-07 |
+| A-22 | 2026-11-15 | Saved servings on the read view | Kept in a visually hidden, aria-hidden span (data-testid="servings"); scaling is display-only | frontend-coder | T-09 |
+| A-23 | 2026-11-15 | Plural/singular of names when scaling | nameFor: cautious s/es/ies rules + irregular table; singular at ≤1; names ending in s, mass nouns (fish, garlic, rice), and names with comma/parenthesis/of/to/for/or/and unchanged; leading count words ("cloves garlic") handled | frontend-coder, debugger | T-09 |
+| A-24 | 2026-11-15 | Servings upper limit in the scaler | 1000, a JS constant mirroring rules.MAX_SERVINGS | debugger | T-09 |
+| A-25 | 2026-11-15 | "Scaled from" text and announcements | 4 UI_TEXTS keys with singular forms; separate aria-live scale-status; Reset is a ≥44 px button | debugger | T-09 |

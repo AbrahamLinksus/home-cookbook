@@ -12,7 +12,7 @@
 | Owner mode | builder: plain words, technical detail collapsed |
 | Size | medium · signals: backend, database, deployment (home Wi-Fi) · 9 stories · full track |
 | Milestone | M3 · Ready at home (M1 done: 393b7c7 · M2 done: d4421d2) |
-| Next step | M3: T-09 Scale servings in review; then T-06 Edit from two devices (shares files with T-09) |
+| Next step | M3: T-06 Edit a recipe safely from two devices (all deps done) · then T-08 Favourites, T-10 whole cookbook |
 | Started | 2026-11-13 07:50 +05:30 (cost.py --since) · Budget 0 (no cap) |
 | Last updated | 2026-11-15 |
 
@@ -86,6 +86,10 @@
 | T-07 | tests (search) | "Units and amounts not searched" barely tested for amounts (m6) | S |
 | T-07 | templates/_list_items.html | Heading reads "All recipes (A–Z)" while a search is showing (owner-visible; seen on result card) | S |
 | T-07 | docs/LLD.md §6.4 | Add "search_failed" UI text (T-07) at M3 as-built sync | S |
+| T-09 | static/js/scaler.js | Plural/singular gaps: "smoothies"→"smoothy", "halves"→"halve", "Tomatoes"→"tomato" loses capital (n1) | S |
+| T-09 | static/js/view.js | MAX_SERVINGS repeats rules.py's limit; pass it from the template (n2) | S |
+| T-09 | tests/e2e (scaler) | No desktop-width run; some old test names (m8) | S |
+| T-09 | docs/LLD.md §6.4, §7.1, §8 | Add nameFor, scale-status test id, 4 scaler UI_TEXTS keys at M3 as-built sync (m6) | S |
 
 ## Context additions
 | Role | Also read | Why (from gap report) |
@@ -95,6 +99,7 @@
 | debugger | tests/e2e/conftest.py | UI fixes need the e2e fixtures (T-02 gap) |
 | debugger | src/cookbook/static/js/api.js, src/cookbook/web/errors.py | UI-text and error-mapping fixes need them (T-04 gap) |
 | planner, tester | docs/scenarios.md | Acceptance criteria link usage scenarios S-xx (planner gap report, stage 6) |
+| reviewer | src/cookbook/static/css/app.css, src/cookbook/domain/rules.py | Touch-target sizes and servings limits need them (T-09 gap) |
 
 ## Notes for the next session
 - LLD is 422 lines after the M2 sync (400-line guide); trimming further would cut real content.
