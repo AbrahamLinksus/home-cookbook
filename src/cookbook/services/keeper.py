@@ -70,6 +70,11 @@ class RecipeKeeper:
             raise DeletedElsewhere(str(recipe_id))
         raise ChangedElsewhere(now_current.version)
 
+    def set_favourite(self, recipe_id: int, favourite: bool) -> None:
+        """Set (not flip) the star; never bumps `version`. DeletedElsewhere when not live."""
+        if not self._repo.set_favourite(recipe_id, favourite):
+            raise DeletedElsewhere(str(recipe_id))
+
     def delete(self, recipe_id: int) -> Recipe:
         """Hide the recipe for the undo window; any earlier pending delete becomes final."""
         deleted = self._repo.mark_deleted(recipe_id, self._clock.now())

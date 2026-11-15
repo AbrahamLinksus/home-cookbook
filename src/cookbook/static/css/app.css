@@ -78,7 +78,7 @@ label.field-label { display: block; margin-top: 8px; font-size: .85rem; color: #
   min-height: 56px; padding: 8px 4px; color: #222; text-decoration: none;
 }
 .row-title { font-weight: 600; }
-.star { border: 0; background: none; font-size: 1.5rem; width: 48px; height: 48px; padding: 0; }
+.star { border: 0; background: none; font-size: 1.5rem; width: 48px; height: 48px; padding: 0; cursor: pointer; }
 .empty { text-align: center; padding: 48px 12px; }
 .empty p { color: #555; margin: 0 0 16px; }
 

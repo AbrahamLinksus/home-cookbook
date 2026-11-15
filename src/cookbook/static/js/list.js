@@ -1,4 +1,5 @@
 import { uiText } from "./api.js";
+import { setFavourite } from "./favourite.js";
 
 const DEBOUNCE_MS = 150;
 
@@ -43,6 +44,20 @@ function init() {
       if (error.name !== "AbortError") showError(list);
     }
   };
+
+  list.addEventListener("click", async (event) => {
+    const star = event.target.closest(".star");
+    if (!star) return;
+    star.disabled = true;
+    const id = star.dataset.id;
+    const { ok, status } = await setFavourite(id, star.getAttribute("aria-pressed") !== "true");
+    if (ok || status === 410) {
+      await run();
+      list.querySelector(`.star[data-id="${id}"]`)?.focus();
+    } else {
+      star.disabled = false;
+    }
+  });
 
   const schedule = () => {
     clearTimeout(timer);

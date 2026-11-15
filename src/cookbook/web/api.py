@@ -45,6 +45,16 @@ def update_recipe(recipe_id: int) -> ResponseReturnValue:
     return jsonify({"id": recipe.id, "version": recipe.version})
 
 
+@bp.put("/recipes/<int:recipe_id>/favourite")
+def set_favourite(recipe_id: int) -> ResponseReturnValue:
+    body: Any = request.get_json(silent=True)
+    value = body.get("favourite") if isinstance(body, dict) else None
+    if not isinstance(value, bool):
+        abort(400)
+    services().keeper.set_favourite(recipe_id, value)
+    return jsonify({"favourite": value})
+
+
 @bp.delete("/recipes/<int:recipe_id>")
 def delete_recipe(recipe_id: int) -> ResponseReturnValue:
     keeper = services().keeper

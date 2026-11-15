@@ -1,4 +1,5 @@
 import { api, uiText } from "./api.js";
+import { setFavourite, paintStar } from "./favourite.js";
 import { startUndo } from "./undo.js";
 import { kindFor, scale, formatAmount, unitFor, nameFor } from "./scaler.js";
 
@@ -75,3 +76,12 @@ if (input) {
   note.querySelector('[data-testid="reset-scale"]').addEventListener("click",
     () => onServingsChange(input.dataset.saved));
 }
+
+const star = document.querySelector('[data-testid="star"]');
+star?.addEventListener("click", async () => {
+  const next = star.getAttribute("aria-pressed") !== "true";
+  star.disabled = true;
+  const { ok } = await setFavourite(star.dataset.id, next);
+  if (ok) paintStar(star, next);
+  star.disabled = false;
+});

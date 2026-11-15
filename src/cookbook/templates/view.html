@@ -9,7 +9,9 @@
 {% block content %}
 <div class="box box-bar">
   <h1 data-testid="recipe-title">{{ recipe.title }}</h1>
-  <span aria-hidden="true" style="font-size:24px">{{ "★" if recipe.favourite else "☆" }}</span>
+  <button class="star" type="button" data-testid="star" data-id="{{ recipe.id }}"
+          aria-pressed="{{ 'true' if recipe.favourite else 'false' }}"
+          aria-label="{{ 'Remove from favourites' if recipe.favourite else 'Add to favourites' }}">{{ "★" if recipe.favourite else "☆" }}</button>
 </div>
 <div class="box">
   <div class="box-bar">
