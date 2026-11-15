@@ -42,6 +42,8 @@
 | D-37 | 2026-11-14 | Import: rename past 200 chars vs SPEC F-6 | Accept as built: refuse the whole file (A-13); log a follow-up for a clearer message than "not an export" | Only hand-edited files hit it · if wrong: shorten instead (~1 small task) | Shorten the title · clearer message only | M2-docs |
 | D-38 | 2026-11-14 | Export timestamp precision (format v1 locked) | Whole seconds; "every field identical" holds to the second (LLD §5.5) | No format change · full precision later needs format v2 | Full precision now | M2-docs |
 | D-39 | 2026-11-14 | Milestone M2 | Approved: as-built LLD + README; continue M3 in a fresh session | — | Continue here · request changes | M2-docs |
+| D-40 | 2026-11-15 | list.js fragment fetch vs "all HTTP through api.js" | Allowed as the one named exception (CONVENTIONS §1, LLD §7.2); T-07 minor closed | owner | M3 |
+| D-41 | 2026-11-15 | Milestone M3 | Approved: as-built LLD + README (015a51b); continue in a fresh session for the handover | owner | M3 |
 
 ## Tier 2 — decided by agents (overrule any time)
 | ID | Date | Decision | Chosen | Agent | Task |
@@ -79,4 +81,3 @@
 | A-31 | 2026-11-15 | Star UI | Shared static/js/favourite.js (via api.js) for list and read view; delegated listener; list refresh through the T-07 fragment keeps the search; on 410 show the deleted message and refresh | frontend-coder | T-08 |
 | A-32 | 2026-11-15 | Search heading | "Matches (A–Z)" when a search is showing (template literal like its siblings; LLD §7.2 entry at M3 sync) | frontend-coder | T-10 |
 | A-33 | 2026-11-15 | Definition-of-done e2e | Real app subprocess `timeout -k 5 300 uv run --no-sync cookbook` on a temp DB, driven at the printed LAN URL; shared start_app/seed fixtures in tests/e2e/conftest.py; screenshots to tmp_path unless COOKBOOK_TEST_SHOTS is set | frontend-coder, tester, debugger | T-10 |
-| D-38 | 2026-11-15 | list.js fragment fetch vs "all HTTP through api.js" | Allowed as the one named exception (CONVENTIONS §1, LLD §7.2); T-07 minor closed | owner | M3 |
