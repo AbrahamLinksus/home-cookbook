@@ -30,7 +30,7 @@
 <ul class="rows">{% for recipe in favourites %}{{ row(recipe) }}{% endfor %}</ul>
 {% endif %}
 {% if others %}
-<h2 class="group">All recipes (A–Z)</h2>
+<h2 class="group">{{ "Matches (A–Z)" if q else "All recipes (A–Z)" }}</h2>
 <ul class="rows">{% for recipe in others %}{{ row(recipe) }}{% endfor %}</ul>
 {% endif %}
 {% endif %}
