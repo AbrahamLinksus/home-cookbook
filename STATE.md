@@ -12,7 +12,7 @@
 | Owner mode | builder: plain words, technical detail collapsed |
 | Size | medium · signals: backend, database, deployment (home Wi-Fi) · 9 stories · full track |
 | Milestone | M3 · Ready at home (M1 done: 393b7c7 · M2 done: d4421d2) |
-| Next step | M3: T-06 Edit a recipe safely from two devices (all deps done) · then T-08 Favourites, T-10 whole cookbook |
+| Next step | M3: T-08 Favourites on top (deps T-05, T-06, T-07 done) · then T-10 Whole cookbook on phone and laptop · then M3 milestone (LLD as-built sync incl. T-05/T-06/T-07/T-09 notes) |
 | Started | 2026-11-13 07:50 +05:30 (cost.py --since) · Budget 0 (no cap) |
 | Last updated | 2026-11-15 |
 
@@ -90,6 +90,10 @@
 | T-09 | static/js/view.js | MAX_SERVINGS repeats rules.py's limit; pass it from the template (n2) | S |
 | T-09 | tests/e2e (scaler) | No desktop-width run; some old test names (m8) | S |
 | T-09 | docs/LLD.md §6.4, §7.1, §8 | Add nameFor, scale-status test id, 4 scaler UI_TEXTS keys at M3 as-built sync (m6) | S |
+| T-06 | static/js/edit.js | Dialog test id stays "deleted-dialog" after a 410, so a later to_be_hidden() on "conflict-dialog" passes vacuously (m6) | S |
+| T-06 | tests/unit/test_keeper_update.py | Unit tests use real SQLite, not the in-memory fake; _lost_race untested (m3) | S |
+| T-06 | static/css/app.css | A disabled Save has no disabled look (n3, predates T-06) | S |
+| T-06 | docs/LLD.md §7.1 | conflict-message test id and the switching dialog test id (M3 as-built sync) | S |
 
 ## Context additions
 | Role | Also read | Why (from gap report) |
@@ -100,6 +104,7 @@
 | debugger | src/cookbook/static/js/api.js, src/cookbook/web/errors.py | UI-text and error-mapping fixes need them (T-04 gap) |
 | planner, tester | docs/scenarios.md | Acceptance criteria link usage scenarios S-xx (planner gap report, stage 6) |
 | reviewer | src/cookbook/static/css/app.css, src/cookbook/domain/rules.py | Touch-target sizes and servings limits need them (T-09 gap) |
+| reviewer | src/cookbook/services/keeper.py, src/cookbook/static/js/edit.js, src/cookbook/templates/edit.html | Edit/conflict reviews need them in full (T-06 gap) |
 
 ## Notes for the next session
 - LLD is 422 lines after the M2 sync (400-line guide); trimming further would cut real content.
@@ -113,3 +118,5 @@
 - Checkpoint after EVERY step before spawning the next agent: `scope` reverts uncommitted files outside the new agent's scope (the first M2 README pass was lost this way).
 - Docs agents have no shell: the Orchestrator renders README/LLD images with capture.py `md`.
 - Run capture.py with ~/.cache/dev-team-setup/venv/bin/python (it has playwright + PIL); the project venv and system python lack one or the other.
+- Debugger and coders cannot run git (scope hook). When a sync conflicts, the Orchestrator runs `git merge --no-commit origin/main` in the worktree, takes main's TASKS/STATE/DECISIONS, sends only the conflicted code file to the debugger, then commits the merge and pushes the wip branch.
+- Record agent IDs in TASK_PROGRESS.md only after the next `scope` + before `checkpoint`; an uncommitted edit there is reverted by the next agent's scope check.

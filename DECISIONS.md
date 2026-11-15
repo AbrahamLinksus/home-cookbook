@@ -71,3 +71,7 @@
 | A-23 | 2026-11-15 | Plural/singular of names when scaling | nameFor: cautious s/es/ies rules + irregular table; singular at ≤1; names ending in s, mass nouns (fish, garlic, rice), and names with comma/parenthesis/of/to/for/or/and unchanged; leading count words ("cloves garlic") handled | frontend-coder, debugger | T-09 |
 | A-24 | 2026-11-15 | Servings upper limit in the scaler | 1000, a JS constant mirroring rules.MAX_SERVINGS | debugger | T-09 |
 | A-25 | 2026-11-15 | "Scaled from" text and announcements | 4 UI_TEXTS keys with singular forms; separate aria-live scale-status; Reset is a ≥44 px button | debugger | T-09 |
+| A-26 | 2026-11-15 | Edit conflict token | Integer recipe.version, bumped only by update (favourite toggles must not bump it); PUT {base_version, recipe}; check order deleted → version → duplicate title | backend-coder | T-06 |
+| A-27 | 2026-11-15 | Conflict dialog | One inline role=alertdialog in edit.html, focused when shown; its data-testid switches by kind (conflict-dialog / deleted-dialog); labels from UI_TEXTS | frontend-coder, debugger | T-06 |
+| A-28 | 2026-11-15 | Hidden elements | Global `[hidden]{display:none !important}` in app.css (button display rules had overridden it) | debugger | T-06 |
+| A-29 | 2026-11-15 | After "Save as new" | edit.js asNew flag: every later Save POSTs, never PUTs to the old id | debugger | T-06 |

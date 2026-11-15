@@ -102,14 +102,14 @@ Test files listed under `Files:` are written by the tester. Paths are relative t
 - Depends on: T-02, T-05
 - Files: src/cookbook/services/keeper.py, src/cookbook/web/api.py, src/cookbook/web/pages.py, src/cookbook/templates/edit.html, src/cookbook/templates/view.html, src/cookbook/static/js/edit.js, tests/unit/test_keeper_update.py, tests/integration/test_api_update.py, tests/e2e/test_edit_two_devices.py
 - Context: SPEC US-01, US-03 · LLD §2.1, §3.1, §3.2, §3.4, §3.5, §6.3, §6.4, §7.4 · files: src/cookbook/services/keeper.py, src/cookbook/web/*.py, src/cookbook/templates/edit.html, src/cookbook/templates/view.html, src/cookbook/static/js/edit.js, docs/wireframes/recipe-edit.html
-- Status: Backlog
+- Status: Done
 - Acceptance criteria:
-  - [ ] Editing "2 cups flour" to "2½ cups flour" and saving shows "2½ cups flour" in read view; saving with the recipe's own title works; renaming it to another recipe's title shows the same-title message under the title
-  - [ ] Two browser contexts: the laptop opens "Lemon Cake" in edit, the phone changes 220°C to 180°C and saves; the laptop's Save shows "This recipe changed on another device"; "Reload theirs" opens the read view with 180°C (laptop typing dropped); repeating with "Keep mine" saves the laptop's version (S-03)
-  - [ ] The phone deletes "Lemon Cake" while the laptop edits it; the laptop's Save keeps all typing and shows "This recipe was deleted on another device"; "Save as new" saves the typed version as "Lemon Cake" and opens it; "Discard my changes" goes to the list and "Lemon Cake" stays deleted; nothing is saved before a choice (S-03)
-  - [ ] If the phone taps Undo before the laptop saves, the laptop's Save works as normal
-  - [ ] Cancel or leaving with unsaved changes asks "Discard changes?"; no prompt after a successful save or after "Reload theirs"
-- Result:
+  - [x] Editing "2 cups flour" to "2½ cups flour" and saving shows "2½ cups flour" in read view; saving with the recipe's own title works; renaming it to another recipe's title shows the same-title message under the title
+  - [x] Two browser contexts: the laptop opens "Lemon Cake" in edit, the phone changes 220°C to 180°C and saves; the laptop's Save shows "This recipe changed on another device"; "Reload theirs" opens the read view with 180°C (laptop typing dropped); repeating with "Keep mine" saves the laptop's version (S-03)
+  - [x] The phone deletes "Lemon Cake" while the laptop edits it; the laptop's Save keeps all typing and shows "This recipe was deleted on another device"; "Save as new" saves the typed version as "Lemon Cake" and opens it; "Discard my changes" goes to the list and "Lemon Cake" stays deleted; nothing is saved before a choice (S-03)
+  - [x] If the phone taps Undo before the laptop saves, the laptop's Save works as normal
+  - [x] Cancel or leaving with unsaved changes asks "Discard changes?"; no prompt after a successful save or after "Reload theirs"
+- Result: approved 2026-11-15 · 995a617 · 5/5 goals · 472 tests, coverage 93% · 1 debug round (M1 [hidden] overridden by .btn CSS; M2 retry after failed Save as new PUT) · review 0 major/2 minor
 
 ### T-07 · Search by name or by ingredient
 - Owner: backend-coder → frontend-coder
