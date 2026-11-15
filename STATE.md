@@ -8,11 +8,11 @@
 | Repo | local (/home/Jake/recipe-test/home-cookbook.git) |
 | Local folder | /home/Jake/recipe-test/home-cookbook (worktrees in /home/Jake/recipe-test/home-cookbook-wt/; start sessions in /home/Jake/recipe-test) |
 | Status | Active |
-| Stage | 7 Build |
+| Stage | 8 Handover (all build tasks done) |
 | Owner mode | builder: plain words, technical detail collapsed |
 | Size | medium · signals: backend, database, deployment (home Wi-Fi) · 9 stories · full track |
-| Milestone | M3 · Ready at home (M1 done: 393b7c7 · M2 done: d4421d2) |
-| Next step | M3 milestone: task M3-docs (architect LLD as-built sync incl. T-05..T-10 notes; docs README) → M3 card with real phone check on home Wi-Fi |
+| Milestone | All milestones done (M1: 393b7c7 · M2: d4421d2 · M3: 015a51b) |
+| Next step | Handover task `handover`: devops CI running scripts/check.sh → architect ARCHITECTURE.md + WALKTHROUGH.md → docs README how to run/test/extend → reviewer checks every named path/command. Start with `/setup-project resume home-cookbook` in a fresh chat (from /home/Jake/recipe-test). Owner still to try the app on the phone over home Wi-Fi (http://192.168.1.16:8765 on this machine) |
 | Started | 2026-11-13 07:50 +05:30 (cost.py --since) · Budget 0 (no cap) |
 | Last updated | 2026-11-15 |
 
@@ -78,27 +78,21 @@
 | T-04 | tests/unit/test_backup_import.py | Every-fixture test only picks up files named v*-*.json (nit) | S |
 | T-04 | services/backup/formats.py, web/messages.py | A file needing a rename past 200 chars is refused as "not an export"; give it a clearer message (D-37) | S |
 | T-05 | services/backup or web/errors.py | API 410 text for a purged recipe reads "'' is gone" (no screen shows it) (nit) | S |
-| T-05 | docs/LLD.md §0.7 | Note that undo.js was edited internally by T-05 (m-a; do at M3 as-built sync) | S |
-| T-07 | static/js/list.js | Uses raw fetch instead of api.js ("all HTTP through api.js"); add an api.js helper or record the exception at M3 sync (m1) | S |
 | T-07 | web/pages.py:67-69 | Reads every recipe twice per keystroke (total_live + search) (m2) | S |
 | T-07 | static/js/list.js | Query built twice; URL can briefly show a newer query than the list (m3) | S |
 | T-07 | web/pages.py | No length cap on q (m5) | S |
 | T-07 | tests (search) | "Units and amounts not searched" barely tested for amounts (m6) | S |
-| T-07 | docs/LLD.md §6.4 | Add "search_failed" UI text (T-07) at M3 as-built sync | S |
 | T-09 | static/js/scaler.js | Plural/singular gaps: "smoothies"→"smoothy", "halves"→"halve", "Tomatoes"→"tomato" loses capital (n1) | S |
 | T-09 | static/js/view.js | MAX_SERVINGS repeats rules.py's limit; pass it from the template (n2) | S |
 | T-09 | tests/e2e (scaler) | No desktop-width run; some old test names (m8) | S |
-| T-09 | docs/LLD.md §6.4, §7.1, §8 | Add nameFor, scale-status test id, 4 scaler UI_TEXTS keys at M3 as-built sync (m6) | S |
 | T-06 | static/js/edit.js | Dialog test id stays "deleted-dialog" after a 410, so a later to_be_hidden() on "conflict-dialog" passes vacuously (m6) | S |
 | T-06 | tests/unit/test_keeper_update.py | Unit tests use real SQLite, not the in-memory fake; _lost_race untested (m3) | S |
 | T-06 | static/css/app.css | A disabled Save has no disabled look (n3, predates T-06) | S |
-| T-06 | docs/LLD.md §7.1 | conflict-message test id and the switching dialog test id (M3 as-built sync) | S |
 | T-08 | templates/_list_items.html:9, view.html:14 | Star aria-labels hard-coded, copying UI_TEXTS; take them from the template context (m1) | S |
 | T-08 | static/js/favourite.js | showMessage never clears menu-message; a failure note stays after a later success (m2) | S |
 | T-08 | tests/e2e/test_favourites.py | No S-xx tag; 361 lines (over 300); fixtures copied from test_edit_two_devices.py, move to conftest (m3) | S |
 | T-08 | static/js/favourite.js | paintStar JSDoc lacks @param types (m4) | S |
 | T-10 | tests/e2e/conftest.py | start_app retry fires on any "cannot start", not only a taken port (n1) | S |
-| T-10 | docs/CONVENTIONS.md §5 | Add a line on the subprocess app fixture and COOKBOOK_TEST_SHOTS (n2) | S |
 | T-10 | tests/e2e | Star helper duplicated across e2e files (n3) | S |
 
 ## Context additions
@@ -126,3 +120,4 @@
 - Run capture.py with ~/.cache/dev-team-setup/venv/bin/python (it has playwright + PIL); the project venv and system python lack one or the other.
 - Debugger and coders cannot run git (scope hook). When a sync conflicts, the Orchestrator runs `git merge --no-commit origin/main` in the worktree, takes main's TASKS/STATE/DECISIONS, sends only the conflicted code file to the debugger, then commits the merge and pushes the wip branch.
 - Record agent IDs in TASK_PROGRESS.md only after the next `scope` + before `checkpoint`; an uncommitted edit there is reverted by the next agent's scope check.
+- M3 docs: the docs agent has no shell; the Orchestrator regenerated README screenshots with `COOKBOOK_TEST_SHOTS=<dir> uv run pytest tests/e2e/test_layout_at_home.py --no-cov` and copied them into docs/images/.
