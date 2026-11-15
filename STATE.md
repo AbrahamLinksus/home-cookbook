@@ -12,7 +12,7 @@
 | Owner mode | builder: plain words, technical detail collapsed |
 | Size | medium · signals: backend, database, deployment (home Wi-Fi) · 9 stories · full track |
 | Milestone | M3 · Ready at home (M1 done: 393b7c7 · M2 done: d4421d2) |
-| Next step | M3: T-08 Favourites on top (deps T-05, T-06, T-07 done) · then T-10 Whole cookbook on phone and laptop · then M3 milestone (LLD as-built sync incl. T-05/T-06/T-07/T-09 notes) |
+| Next step | M3: T-10 Whole cookbook on phone and laptop at home (last M3 task; all deps done) · then M3 milestone (architect LLD as-built sync, docs README) |
 | Started | 2026-11-13 07:50 +05:30 (cost.py --since) · Budget 0 (no cap) |
 | Last updated | 2026-11-15 |
 
@@ -94,6 +94,10 @@
 | T-06 | tests/unit/test_keeper_update.py | Unit tests use real SQLite, not the in-memory fake; _lost_race untested (m3) | S |
 | T-06 | static/css/app.css | A disabled Save has no disabled look (n3, predates T-06) | S |
 | T-06 | docs/LLD.md §7.1 | conflict-message test id and the switching dialog test id (M3 as-built sync) | S |
+| T-08 | templates/_list_items.html:9, view.html:14 | Star aria-labels hard-coded, copying UI_TEXTS; take them from the template context (m1) | S |
+| T-08 | static/js/favourite.js | showMessage never clears menu-message; a failure note stays after a later success (m2) | S |
+| T-08 | tests/e2e/test_favourites.py | No S-xx tag; 361 lines (over 300); fixtures copied from test_edit_two_devices.py, move to conftest (m3) | S |
+| T-08 | static/js/favourite.js | paintStar JSDoc lacks @param types (m4) | S |
 
 ## Context additions
 | Role | Also read | Why (from gap report) |

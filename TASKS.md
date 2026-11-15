@@ -131,13 +131,13 @@ Test files listed under `Files:` are written by the tester. Paths are relative t
 - Files: src/cookbook/services/keeper.py, src/cookbook/web/api.py, src/cookbook/templates/_list_items.html, src/cookbook/templates/view.html, src/cookbook/static/js/list.js, src/cookbook/static/js/view.js, tests/unit/test_keeper_favourite.py, tests/integration/test_api_favourite.py, tests/e2e/test_favourites.py
 - Context: SPEC US-07, US-03 · LLD §2.1, §3.1, §3.2, §3.5, §7.2, §7.3 · files: src/cookbook/services/keeper.py, src/cookbook/web/api.py, src/cookbook/templates/_list_items.html, src/cookbook/templates/view.html, src/cookbook/static/js/list.js, src/cookbook/static/js/view.js, docs/wireframes/recipe-list.html, docs/wireframes/recipe-view.html
 - Notes: depends on T-07 (list refresh via `/recipes/_list`), T-06 (starring must not trigger the changed-elsewhere warning) and T-05 (Undo keeps the star).
-- Status: Backlog
+- Status: Done
 - Acceptance criteria:
-  - [ ] Starring "Sunday Roast Chicken" in the list moves it to the top, above "Aunt May's Scones"; favourites first, then A–Z within each group; unstarring returns it to its A–Z place
-  - [ ] Starring from the read view shows in the list, survives a reload and is seen from a second browser context
-  - [ ] Starring "Lemon Cake" on the phone while the laptop edits it: the laptop's Save goes through with no warning and the star is kept; after a real conflict both "Reload theirs" and "Keep mine" keep the current star
-  - [ ] Deleting a starred recipe and tapping "Undo" brings it back starred
-- Result:
+  - [x] Starring "Sunday Roast Chicken" in the list moves it to the top, above "Aunt May's Scones"; favourites first, then A–Z within each group; unstarring returns it to its A–Z place
+  - [x] Starring from the read view shows in the list, survives a reload and is seen from a second browser context
+  - [x] Starring "Lemon Cake" on the phone while the laptop edits it: the laptop's Save goes through with no warning and the star is kept; after a real conflict both "Reload theirs" and "Keep mine" keep the current star
+  - [x] Deleting a starred recipe and tapping "Undo" brings it back starred
+- Result: approved 2026-11-15 · b185051 · 4/4 goals · 504 tests, coverage 93% · 0 debug rounds · review 0 major/4 minor
 
 ### T-09 · Scale a recipe to a different number of servings
 - Owner: frontend-coder
