@@ -77,3 +77,5 @@
 | A-29 | 2026-11-15 | After "Save as new" | edit.js asNew flag: every later Save POSTs, never PUTs to the old id | debugger | T-06 |
 | A-30 | 2026-11-15 | Favourite API | PUT /api/recipes/<id>/favourite {"favourite": bool}: sets (idempotent), never bumps version; 410 for missing/pending-delete | backend-coder | T-08 |
 | A-31 | 2026-11-15 | Star UI | Shared static/js/favourite.js (via api.js) for list and read view; delegated listener; list refresh through the T-07 fragment keeps the search; on 410 show the deleted message and refresh | frontend-coder | T-08 |
+| A-32 | 2026-11-15 | Search heading | "Matches (A–Z)" when a search is showing (template literal like its siblings; LLD §7.2 entry at M3 sync) | frontend-coder | T-10 |
+| A-33 | 2026-11-15 | Definition-of-done e2e | Real app subprocess `timeout -k 5 300 uv run --no-sync cookbook` on a temp DB, driven at the printed LAN URL; shared start_app/seed fixtures in tests/e2e/conftest.py; screenshots to tmp_path unless COOKBOOK_TEST_SHOTS is set | frontend-coder, tester, debugger | T-10 |

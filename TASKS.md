@@ -156,13 +156,13 @@ Test files listed under `Files:` are written by the tester. Paths are relative t
 ### T-10 · Whole cookbook on phone and laptop at home
 - Owner: frontend-coder
 - Depends on: T-04, T-06, T-08, T-09
-- Files: src/cookbook/static/css/app.css, src/cookbook/templates/*.html (layout fixes only), tests/e2e/test_definition_of_done.py
+- Files: src/cookbook/static/css/app.css, src/cookbook/templates/*.html (layout fixes only), tests/e2e/test_definition_of_done.py, tests/e2e/test_layout_at_home.py, tests/e2e/conftest.py
 - Context: SPEC US-01..US-09 (§12 Definition of done) · LLD §0.6, §6.5, §7 · files: src/cookbook/templates/*, src/cookbook/static/css/app.css, docs/wireframes/*.html
 - Notes: the M3 checkpoint. The owner's real-network check (phone on the home Wi-Fi) happens at the M3 card; this task proves the same journey automatically and fixes layout gaps found across the finished screens.
-- Status: Backlog
+- Status: Done
 - Acceptance criteria:
-  - [ ] Started with `timeout … uv run cookbook` on a temp data file, the app answers at the printed LAN address (not only 127.0.0.1) from a 390×844 phone context and a 1280×800 laptop context
-  - [ ] One e2e journey runs SPEC §12: add "Grandma's Apple Pie" on the phone and see it on the laptop; "pie" by name and "buttermilk" by ingredient; 8 → 4 servings shows "½ cup", saved recipe unchanged; a starred recipe on top; delete then Undo; export, fresh app, import brings every recipe back
-  - [ ] All three screens have no sideways scroll at 390 px, use the desktop layout at 1280 px, and every button is at least 44 px tall; screenshots of list, view and edit at both sizes in `.results/T-10/`
-  - [ ] Full `scripts/check.sh` passes, including 80% coverage
-- Result:
+  - [x] Started with `timeout … uv run cookbook` on a temp data file, the app answers at the printed LAN address (not only 127.0.0.1) from a 390×844 phone context and a 1280×800 laptop context
+  - [x] One e2e journey runs SPEC §12: add "Grandma's Apple Pie" on the phone and see it on the laptop; "pie" by name and "buttermilk" by ingredient; 8 → 4 servings shows "½ cup", saved recipe unchanged; a starred recipe on top; delete then Undo; export, fresh app, import brings every recipe back
+  - [x] All three screens have no sideways scroll at 390 px, use the desktop layout at 1280 px, and every button is at least 44 px tall; screenshots of list, view and edit at both sizes in `.results/T-10/`
+  - [x] Full `scripts/check.sh` passes, including 80% coverage
+- Result: approved 2026-11-15 · 1cc0267 · 4/4 goals · 516 tests, coverage 93% · 1 debug round (test-only: vacuous buttermilk check, star reload race, file size) · review 0 major/3 minor

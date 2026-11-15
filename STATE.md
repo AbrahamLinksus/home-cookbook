@@ -12,7 +12,7 @@
 | Owner mode | builder: plain words, technical detail collapsed |
 | Size | medium · signals: backend, database, deployment (home Wi-Fi) · 9 stories · full track |
 | Milestone | M3 · Ready at home (M1 done: 393b7c7 · M2 done: d4421d2) |
-| Next step | M3: T-10 Whole cookbook on phone and laptop at home (last M3 task; all deps done) · then M3 milestone (architect LLD as-built sync, docs README) |
+| Next step | M3 milestone: task M3-docs (architect LLD as-built sync incl. T-05..T-10 notes; docs README) → M3 card with real phone check on home Wi-Fi |
 | Started | 2026-11-13 07:50 +05:30 (cost.py --since) · Budget 0 (no cap) |
 | Last updated | 2026-11-15 |
 
@@ -84,7 +84,6 @@
 | T-07 | static/js/list.js | Query built twice; URL can briefly show a newer query than the list (m3) | S |
 | T-07 | web/pages.py | No length cap on q (m5) | S |
 | T-07 | tests (search) | "Units and amounts not searched" barely tested for amounts (m6) | S |
-| T-07 | templates/_list_items.html | Heading reads "All recipes (A–Z)" while a search is showing (owner-visible; seen on result card) | S |
 | T-07 | docs/LLD.md §6.4 | Add "search_failed" UI text (T-07) at M3 as-built sync | S |
 | T-09 | static/js/scaler.js | Plural/singular gaps: "smoothies"→"smoothy", "halves"→"halve", "Tomatoes"→"tomato" loses capital (n1) | S |
 | T-09 | static/js/view.js | MAX_SERVINGS repeats rules.py's limit; pass it from the template (n2) | S |
@@ -98,6 +97,9 @@
 | T-08 | static/js/favourite.js | showMessage never clears menu-message; a failure note stays after a later success (m2) | S |
 | T-08 | tests/e2e/test_favourites.py | No S-xx tag; 361 lines (over 300); fixtures copied from test_edit_two_devices.py, move to conftest (m3) | S |
 | T-08 | static/js/favourite.js | paintStar JSDoc lacks @param types (m4) | S |
+| T-10 | tests/e2e/conftest.py | start_app retry fires on any "cannot start", not only a taken port (n1) | S |
+| T-10 | docs/CONVENTIONS.md §5 | Add a line on the subprocess app fixture and COOKBOOK_TEST_SHOTS (n2) | S |
+| T-10 | tests/e2e | Star helper duplicated across e2e files (n3) | S |
 
 ## Context additions
 | Role | Also read | Why (from gap report) |
