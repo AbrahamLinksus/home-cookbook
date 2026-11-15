@@ -7,12 +7,12 @@
 | Problem | A private recipe box on the home computer, used from phone and laptop: save family recipes, search by name or ingredient, scale servings, favourites on top, export everything to a file |
 | Repo | local (/home/Jake/recipe-test/home-cookbook.git) |
 | Local folder | /home/Jake/recipe-test/home-cookbook (worktrees in /home/Jake/recipe-test/home-cookbook-wt/; start sessions in /home/Jake/recipe-test) |
-| Status | Active |
-| Stage | 8 Handover (all build tasks done) |
+| Status | Complete |
+| Stage | Complete — handover approved 2026-11-15 (main 07d5d9c + follow-up 16e1af3) |
 | Owner mode | builder: plain words, technical detail collapsed |
 | Size | medium · signals: backend, database, deployment (home Wi-Fi) · 9 stories · full track |
 | Milestone | All milestones done (M1: 393b7c7 · M2: d4421d2 · M3: 015a51b) |
-| Next step | Handover task `handover`: devops CI running scripts/check.sh → architect ARCHITECTURE.md + WALKTHROUGH.md → docs README how to run/test/extend → reviewer checks every named path/command. Start with `/setup-project resume home-cookbook` in a fresh chat (from /home/Jake/recipe-test). Owner still to try the app on the phone over home Wi-Fi (http://192.168.1.16:8765 on this machine) |
+| Next step | None — project complete. Owner confirmed 2026-11-15 the app works on the phone over home Wi-Fi. Optional later: push to GitHub (see Notes) so CI in .github/workflows/ci.yml starts running; re-render docs/diagrams/lld-components.png with favourite.js |
 | Started | 2026-11-13 07:50 +05:30 (cost.py --since) · Budget 0 (no cap) |
 | Last updated | 2026-11-15 |
 
@@ -102,6 +102,7 @@
 | reviewer | src/cookbook/templates/base.html, src/cookbook/domain/rules.py, src/cookbook/adapters/sqlite_repo.py | Verifying links and repository behaviour needs them (T-03 gap) |
 | debugger | tests/e2e/conftest.py | UI fixes need the e2e fixtures (T-02 gap) |
 | debugger | src/cookbook/static/js/api.js, src/cookbook/web/errors.py | UI-text and error-mapping fixes need them (T-04 gap) |
+| docs | the Python, JS and test files named in docs/ARCHITECTURE.md and docs/WALKTHROUGH.md | Verifying names in README needs them (handover gap) |
 | planner, tester | docs/scenarios.md | Acceptance criteria link usage scenarios S-xx (planner gap report, stage 6) |
 | reviewer | src/cookbook/static/css/app.css, src/cookbook/domain/rules.py | Touch-target sizes and servings limits need them (T-09 gap) |
 | reviewer | src/cookbook/services/keeper.py, src/cookbook/static/js/edit.js, src/cookbook/templates/edit.html | Edit/conflict reviews need them in full (T-06 gap) |
@@ -121,3 +122,4 @@
 - Debugger and coders cannot run git (scope hook). When a sync conflicts, the Orchestrator runs `git merge --no-commit origin/main` in the worktree, takes main's TASKS/STATE/DECISIONS, sends only the conflicted code file to the debugger, then commits the merge and pushes the wip branch.
 - Record agent IDs in TASK_PROGRESS.md only after the next `scope` + before `checkpoint`; an uncommitted edit there is reverted by the next agent's scope check.
 - M3 docs: the docs agent has no shell; the Orchestrator regenerated README screenshots with `COOKBOOK_TEST_SHOTS=<dir> uv run pytest tests/e2e/test_layout_at_home.py --no-cov` and copied them into docs/images/.
+- Handover: the debugger may not edit docs/*.md (scope check reverts them); send doc fixes to the architect or docs agent.
