@@ -4,7 +4,7 @@
 {% endblock %}
 {% block content %}
 {% if total_live %}
-<form class="search" role="search" onsubmit="return false">
+<form class="search" role="search" method="get" action="/" data-testid="search-form">
   <input type="search" name="q" value="{{ q }}" placeholder="Search recipes…"
          aria-label="Search recipes" data-testid="search-input">
   <div class="toggle" role="group" aria-label="Search by">
@@ -18,4 +18,7 @@
 <div id="recipe-list" data-testid="recipe-list">
 {% include "_list_items.html" %}
 </div>
+{% endblock %}
+{% block scripts %}
+<script type="module" src="{{ url_for('static', filename='js/list.js') }}"></script>
 {% endblock %}

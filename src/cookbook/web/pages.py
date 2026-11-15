@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, request
 
 from cookbook.domain.amounts import display_amount, parse_amount
 from cookbook.domain.models import Ingredient, Recipe, SearchBy
@@ -55,16 +55,29 @@ def ui_texts() -> dict[str, dict[str, str]]:
     return {"ui_texts": messages.UI_TEXTS}
 
 
+def parse_by(raw: str | None) -> SearchBy:
+    """`by` query value; anything unknown means name (LLD §4.2)."""
+    return SearchBy.INGREDIENT if raw == SearchBy.INGREDIENT.value else SearchBy.NAME
+
+
+def list_context() -> dict[str, object]:
+    """Template context for the list page and its fragment (LLD §7.2)."""
+    q = request.args.get("q", "")
+    by = parse_by(request.args.get("by"))
+    svc = services()
+    total_live = len(svc.keeper.list_recipes())
+    recipes = svc.finder.search(q, by)
+    return {"recipes": recipes, "q": q, "by": by.value, "total_live": total_live}
+
+
 @bp.get("/")
 def recipe_list() -> str:
-    recipes = services().keeper.list_recipes()
-    return render_template(
-        "list.html",
-        recipes=recipes,
-        q="",
-        by=SearchBy.NAME.value,
-        total_live=len(recipes),
-    )
+    return render_template("list.html", **list_context())
+
+
+@bp.get("/recipes/_list")
+def recipe_list_items() -> str:
+    return render_template("_list_items.html", **list_context())
 
 
 @bp.get("/recipes/new")
